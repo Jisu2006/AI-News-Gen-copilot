@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>Categories - AI-NewsGen Copilot</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            color: #222;
+        }
+
+        /* HEADER */
+
+        header {
+            background: #111;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #ccc;
+            font-size: 15px;
+        }
+
+        /* NAVIGATION */
+
+        nav {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #222;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #666;
+        }
+
+        /* MAIN */
+
+        .container {
+            max-width: 1100px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .page-title {
+            margin-bottom: 30px;
+            border-bottom: 3px solid #111;
+            padding-bottom: 10px;
+        }
+
+        .page-title h2 {
+            font-size: 30px;
+        }
+
+        .page-title p {
+            margin-top: 8px;
+            color: #666;
+        }
+
+        /* CATEGORY GRID */
+
+        .category-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .category-card {
+            background: white;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            text-decoration: none;
+            color: #222;
+            transition: transform 0.2s;
+            text-align: center;
+        }
+
+        .category-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .category-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .category-card p {
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* FOOTER */
+
+        footer {
+            margin-top: 50px;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .category-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+        }
+
+        @media (max-width: 600px) {
+
+            header h1 {
+                font-size: 28px;
+            }
+
+            nav a {
+                display: inline-block;
+                margin: 5px 8px;
+            }
+
+            .category-grid {
+                grid-template-columns: 1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+    <!-- HEADER -->
+
+    <header>
+
+        <h1>AI-NewsGen Copilot</h1>
+
+        <p>
+            AI-Powered Digital Newspaper
+        </p>
+
+    </header>
+
+
+    <!-- NAVIGATION -->
+
+    <nav>
+
+        <a href="{{ url_for('news.homepage') }}">
+            Home
+        </a>
+
+        <a href="{{ url_for('news.homepage') }}#latest-news">
+            Latest News
+        </a>
+
+        <a href="{{ url_for('news.breaking_news_page') }}">
+            🚨 Breaking News
+        </a>
+
+        <a href="{{ url_for('news.featured_news_page') }}">
+            ⭐ Featured News
+        </a>
+
+        <a href="{{ url_for('news.categories_page') }}">
+            Categories
+        </a>
+
+        <a href="{{ url_for('news.about_page') }}">
+            About
+        </a>
+
+    </nav>
+
+
+    <!-- MAIN CONTENT -->
+
+    <main class="container">
+
+        <div class="page-title">
+
+            <h2>
+                News Categories
+            </h2>
+
+            <p>
+                Explore news by category.
+            </p>
+
+        </div>
+
+
+        <div class="category-grid">
+
+            {% for category in categories %}
+
+                <a
+                    href="{{ url_for('news.homepage', category=category) }}"
+                    class="category-card"
+                >
+
+                    <h3>
+                        {{ category }}
+                    </h3>
+
+                    <p>
+                        View {{ category }} news
+                    </p>
+
+                </a>
+
+            {% endfor %}
+
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+
+        <p>
+            © 2026 AI-NewsGen Copilot
+        </p>
+
+        <p>
+            AI-Powered Digital Newspaper Platform
+        </p>
+
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>About - AI-NewsGen Copilot</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            color: #222;
+        }
+
+        header {
+            background: #111;
+            color: white;
+            padding: 25px 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 36px;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #ccc;
+            font-size: 15px;
+        }
+
+        nav {
+            background: white;
+            border-bottom: 1px solid #ddd;
+            padding: 15px;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        nav a {
+            text-decoration: none;
+            color: #222;
+            margin: 0 15px;
+            font-weight: bold;
+        }
+
+        nav a:hover {
+            color: #666;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .about-card {
+            background: white;
+            padding: 35px;
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+        }
+
+        .about-card h2 {
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .about-card h3 {
+            margin-top: 25px;
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .about-card p {
+            line-height: 1.7;
+            color: #444;
+            margin-bottom: 12px;
+        }
+
+        .about-card ul {
+            margin-left: 25px;
+            line-height: 1.8;
+            color: #444;
+        }
+
+        footer {
+            margin-top: 50px;
+            background: #111;
+            color: white;
+            text-align: center;
+            padding: 25px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 600px) {
+
+            header h1 {
+                font-size: 28px;
+            }
+
+            nav a {
+                display: inline-block;
+                margin: 5px 8px;
+            }
+
+            .about-card {
+                padding: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <h1>AI-NewsGen Copilot</h1>
+        <p>AI-Powered Digital Newspaper</p>
+    </header>
+
+
+    <!-- NAVIGATION -->
+    <nav>
+
+        <a href="{{ url_for('news.homepage') }}">
+            Home
+        </a>
+
+        <a href="{{ url_for('news.homepage') }}#latest-news">
+            Latest News
+        </a>
+
+        <a href="{{ url_for('news.breaking_news_page') }}">
+            🚨 Breaking News
+        </a>
+
+        <a href="{{ url_for('news.featured_news_page') }}">
+            ⭐ Featured News
+        </a>
+
+        <a href="{{ url_for('news.categories_page') }}">
+            Categories
+        </a>
+
+        <a href="{{ url_for('news.about_page') }}">
+            About
+        </a>
+
+    </nav>
+
+
+    <!-- ABOUT CONTENT -->
+    <main class="container">
+
+        <div class="about-card">
+
+            <h2>About AI-NewsGen Copilot</h2>
+
+            <p>
+                AI-NewsGen Copilot is an AI-powered digital newspaper
+                platform designed to help users submit news information
+                and generate structured news drafts using artificial intelligence.
+            </p>
+
+            <p>
+                The platform combines user-submitted information,
+                AI-assisted news drafting, and administrator review
+                to create a controlled digital news publishing workflow.
+            </p>
+
+            <h3>How It Works</h3>
+
+            <ul>
+                <li>User submits information about a news incident.</li>
+                <li>AI generates a structured news draft.</li>
+                <li>The generated draft is sent to the administrator for review.</li>
+                <li>The administrator can edit, approve, request information, or reject the news.</li>
+                <li>Only approved news can be published.</li>
+            </ul>
+
+            <h3>Key Features</h3>
+
+            <ul>
+                <li>AI-assisted news generation</li>
+                <li>User news submission</li>
+                <li>Administrator review and approval</li>
+                <li>Breaking and featured news</li>
+                <li>News search and filtering</li>
+                <li>Category, location and date filtering</li>
+                <li>Image and video support</li>
+                <li>Public digital newspaper</li>
+            </ul>
+
+            <h3>Purpose</h3>
+
+            <p>
+                The main purpose of AI-NewsGen Copilot is to simplify
+                the process of converting user-provided incident
+                information into a readable and structured news draft,
+                while keeping administrator review as an important
+                step before publication.
+            </p>
+
+        </div>
+
+    </main>
+
+
+    <!-- FOOTER -->
+    <footer>
+
+        <p>
+            © 2026 AI-NewsGen Copilot
+        </p>
+
+        <p>
+            AI-Powered Digital Newspaper Platform
+        </p>
+
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>My News - AI-NewsGen Copilot</title>
+
+</head>
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- FLASH MESSAGES -->
+    <!-- ================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <p>
+                    {{ message }}
+                </p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>My News</h2>
+
+
+    {% if news_list %}
+
+        {% for news in news_list %}
+
+            <div>
+
+                <!-- ================================================== -->
+                <!-- NEWS TITLE -->
+                <!-- ================================================== -->
+
+                <h3>
+                    {{ news.title }}
+                </h3>
+
+
+                <!-- ================================================== -->
+                <!-- CATEGORY -->
+                <!-- ================================================== -->
+
+                <p>
+
+                    <strong>Category:</strong>
+
+                    {{ news.category }}
+
+                </p>
+
+
+                <!-- ================================================== -->
+                <!-- LOCATION -->
+                <!-- ================================================== -->
+
+                <p>
+
+                    <strong>Location:</strong>
+
+                    {{ news.location or "Not provided" }}
+
+                </p>
+
+
+                <!-- ================================================== -->
+                <!-- STATUS -->
+                <!-- ================================================== -->
+
+                <p>
+
+                    <strong>Status:</strong>
+
+                    {{ news.status }}
+
+                </p>
+
+
+                <!-- ================================================== -->
+                <!-- SUBMITTED DATE -->
+                <!-- ================================================== -->
+
+                <p>
+
+                    <strong>Submitted:</strong>
+
+                    {{ news.created_at }}
+
+                </p>
+
+
+                <!-- ================================================== -->
+                <!-- NEEDS INFORMATION -->
+                <!-- ================================================== -->
+
+                {% if news.status == "NEEDS_INFORMATION" %}
+
+                    <hr>
+
+                    <h4>
+                        ⚠️ Additional Information Required
+                    </h4>
+
+
+                    {% if news.admin_comment %}
+
+                        <p>
+
+                            <strong>Admin Request:</strong>
+
+                        </p>
+
+                        <p>
+                            {{ news.admin_comment }}
+                        </p>
+
+                    {% else %}
+
+                        <p>
+                            The admin has requested additional
+                            information for this news.
+                        </p>
+
+                    {% endif %}
+
+
+                    <p>
+
+                        <a
+                            href="{{ url_for(
+                                'user.provide_information',
+                                news_id=news.id
+                            ) }}"
+                        >
+                            📝 Provide Additional Information
+                        </a>
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- AI PROCESSING -->
+                <!-- ================================================== -->
+
+                {% if news.status == "AI_PROCESSING" %}
+
+                    <p>
+
+                        ⏳ Your news is currently being processed
+                        by AI.
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- PENDING REVIEW -->
+                <!-- ================================================== -->
+
+                {% if news.status == "PENDING_REVIEW" %}
+
+                    <p>
+
+                        ⏳ Your news is waiting for admin review.
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- APPROVED -->
+                <!-- ================================================== -->
+
+                {% if news.status == "APPROVED" %}
+
+                    <p>
+
+                        ✅ Your news has been approved and is
+                        waiting for publication.
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- PUBLISHED -->
+                <!-- ================================================== -->
+
+                {% if news.status == "PUBLISHED" %}
+
+                    <p>
+
+                        📰 Your news has been published.
+
+                    </p>
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- REJECTED -->
+                <!-- ================================================== -->
+
+                {% if news.status == "REJECTED" %}
+
+                    <p>
+
+                        ❌ Your news has been rejected.
+
+                    </p>
+
+
+                    {% if news.admin_comment %}
+
+                        <p>
+
+                            <strong>Admin Reason:</strong>
+
+                        </p>
+
+                        <p>
+                            {{ news.admin_comment }}
+                        </p>
+
+                    {% endif %}
+
+                {% endif %}
+
+
+                <!-- ================================================== -->
+                <!-- AI PROCESSING FAILED -->
+                <!-- ================================================== -->
+
+                {% if news.status == "AI_PROCESSING_FAILED" %}
+
+                    <p>
+
+                        ⚠️ AI processing failed.
+                        Please try again later.
+
+                    </p>
+
+                {% endif %}
+
+
+                <hr>
+
+            </div>
+
+        {% endfor %}
+
+    {% else %}
+
+        <p>
+            You have not submitted any news yet.
+        </p>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- SUBMIT NEW NEWS -->
+    <!-- ================================================== -->
+
+    <a href="{{ url_for('user.submit_news') }}">
+        Submit New News
+    </a>
+
+
+    <br><br>
+
+
+    <!-- ================================================== -->
+    <!-- BACK TO USER DASHBOARD -->
+    <!-- ================================================== -->
+
+    <a href="{{ url_for('user.dashboard') }}">
+        Back to Dashboard
+    </a>
+
+</body>
+
+</html>

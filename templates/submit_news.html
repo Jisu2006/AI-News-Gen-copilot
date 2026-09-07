@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Submit News - AI-NewsGen Copilot</title>
+
+</head>
+
+<body>
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>Submit News</h2>
+
+
+    <!-- ==================================================
+         FLASH MESSAGES
+         ================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                {% if category == "success" %}
+
+                    <div
+                        style="padding: 10px;
+                               margin: 10px 0;
+                               border: 1px solid #c3e6cb;
+                               border-radius: 5px;
+                               background-color: #d4edda;
+                               color: #155724;"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% else %}
+
+                    <div
+                        style="padding: 10px;
+                               margin: 10px 0;
+                               border: 1px solid #f5c6cb;
+                               border-radius: 5px;
+                               background-color: #f8d7da;
+                               color: #721c24;"
+                    >
+                        {{ message }}
+                    </div>
+
+                {% endif %}
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ==================================================
+         SUBMIT NEWS FORM
+         ================================================== -->
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+    >
+
+        <!-- CSRF Protection -->
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+
+        <!-- ==================================================
+             CATEGORY
+             ================================================== -->
+
+        <label>Category</label>
+
+        <br>
+
+        <select name="category" required>
+
+            <option value="">
+                Select Category
+            </option>
+
+            <option value="Local News">
+                Local News
+            </option>
+
+            <option value="Accident">
+                Accident
+            </option>
+
+            <option value="Crime">
+                Crime
+            </option>
+
+            <option value="Sports">
+                Sports
+            </option>
+
+            <option value="Entertainment">
+                Entertainment
+            </option>
+
+            <option value="Education">
+                Education
+            </option>
+
+            <option value="Technology">
+                Technology
+            </option>
+
+            <option value="Business">
+                Business
+            </option>
+
+            <option value="Weather">
+                Weather
+            </option>
+
+            <option value="Politics">
+                Politics
+            </option>
+
+            <option value="Events">
+                Events
+            </option>
+
+            <option value="Other">
+                Other
+            </option>
+
+        </select>
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             TITLE
+             ================================================== -->
+
+        <label>
+            News Title / Topic
+        </label>
+
+        <br>
+
+        <input
+            type="text"
+            name="title"
+            placeholder="Enter news topic"
+            required
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             LOCATION
+             ================================================== -->
+
+        <label>Location</label>
+
+        <br>
+
+        <input
+            type="text"
+            name="location"
+            placeholder="Example: Rasulgarh Square, Bhubaneswar"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             DATE
+             ================================================== -->
+
+        <label>Date</label>
+
+        <br>
+
+        <input
+            type="date"
+            name="incident_date"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             TIME
+             ================================================== -->
+
+        <label>Time</label>
+
+        <br>
+
+        <input
+            type="time"
+            name="incident_time"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             BULLET POINTS
+             ================================================== -->
+
+        <label>Bullet Points</label>
+
+        <br>
+
+        <textarea
+            name="bullet_points"
+            rows="8"
+            cols="70"
+            placeholder="• First point&#10;• Second point&#10;• Third point"
+            required
+        ></textarea>
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             ADDITIONAL DESCRIPTION
+             ================================================== -->
+
+        <label>
+            Additional Description
+        </label>
+
+        <br>
+
+        <textarea
+            name="additional_description"
+            rows="5"
+            cols="70"
+            placeholder="Additional information..."
+        ></textarea>
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             IMAGE
+             ================================================== -->
+
+        <label>
+            Image (Optional)
+        </label>
+
+        <br>
+
+        <input
+            type="file"
+            name="image"
+            accept=".jpg,.jpeg,.png,.gif,.webp"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             VIDEO
+             ================================================== -->
+
+        <label>
+            Video (Optional)
+        </label>
+
+        <br>
+
+        <input
+            type="file"
+            name="video"
+            accept=".mp4,.mov,.avi,.webm"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             SOURCE URL
+             ================================================== -->
+
+        <label>
+            Source URL
+        </label>
+
+        <br>
+
+        <input
+            type="url"
+            name="source_url"
+            placeholder="https://example.com"
+        >
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             SUPPORTING INFORMATION
+             ================================================== -->
+
+        <label>
+            Supporting Information
+        </label>
+
+        <br>
+
+        <textarea
+            name="supporting_information"
+            rows="5"
+            cols="70"
+            placeholder="Official notice, event link, additional evidence information..."
+        ></textarea>
+
+
+        <br><br>
+
+
+        <!-- ==================================================
+             BUTTONS
+             ================================================== -->
+
+        <button
+            type="submit"
+            name="action"
+            value="draft"
+        >
+            Save Draft
+        </button>
+
+
+        &nbsp;&nbsp;
+
+
+        <button
+            type="submit"
+            name="action"
+            value="submit"
+        >
+            Submit News
+        </button>
+
+    </form>
+
+
+    <br><br>
+
+
+    <!-- ==================================================
+         NAVIGATION
+         ================================================== -->
+
+    <a href="{{ url_for('user.my_news') }}">
+        My News
+    </a>
+
+
+    <br><br>
+
+
+    <a href="{{ url_for('user.dashboard') }}">
+        Back to Dashboard
+    </a>
+
+
+</body>
+
+</html>

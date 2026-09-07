@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Edit News - AI-NewsGen Copilot</title>
+
+</head>
+
+<body>
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>Admin Edit News</h2>
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- ORIGINAL USER SUBMISSION -->
+    <!-- ================================================== -->
+
+    <h3>Original User Submission</h3>
+
+    <p>
+        <strong>Category:</strong>
+        {{ news.category }}
+    </p>
+
+    <p>
+        <strong>Title:</strong>
+        {{ news.title }}
+    </p>
+
+    <p>
+        <strong>Location:</strong>
+        {{ news.location or "Not provided" }}
+    </p>
+
+    <p>
+        <strong>Incident Date:</strong>
+        {{ news.incident_date or "Not provided" }}
+    </p>
+
+    <p>
+        <strong>Incident Time:</strong>
+        {{ news.incident_time or "Not provided" }}
+    </p>
+
+    <p>
+        <strong>Bullet Points:</strong>
+    </p>
+
+    <pre>{{ news.bullet_points }}</pre>
+
+
+    {% if news.additional_description %}
+
+        <p>
+            <strong>Additional Description:</strong>
+        </p>
+
+        <pre>{{ news.additional_description }}</pre>
+
+    {% endif %}
+
+
+    {% if news.source_url %}
+
+        <p>
+
+            <strong>Source URL:</strong>
+
+            <a
+                href="{{ news.source_url }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {{ news.source_url }}
+            </a>
+
+        </p>
+
+    {% endif %}
+
+
+    {% if news.supporting_information %}
+
+        <p>
+            <strong>Supporting Information:</strong>
+        </p>
+
+        <pre>{{ news.supporting_information }}</pre>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- AI GENERATED DRAFT -->
+    <!-- ================================================== -->
+
+    <h3>AI Generated Draft</h3>
+
+    <p>
+        <strong>AI Headline:</strong>
+    </p>
+
+    <h2>
+        {{ news.ai_headline }}
+    </h2>
+
+
+    <p>
+        <strong>AI Subheading:</strong>
+    </p>
+
+    <p>
+        {{ news.ai_subheading }}
+    </p>
+
+
+    <p>
+        <strong>AI Summary:</strong>
+    </p>
+
+    <p>
+        {{ news.ai_summary }}
+    </p>
+
+
+    <p>
+        <strong>AI Article:</strong>
+    </p>
+
+    <div>
+        {{ news.ai_article }}
+    </div>
+
+
+    <p>
+        <strong>AI Key Facts:</strong>
+    </p>
+
+    {% if news.key_facts %}
+
+        <pre>{{ news.key_facts }}</pre>
+
+    {% else %}
+
+        <p>No key facts available.</p>
+
+    {% endif %}
+
+
+    <p>
+        <strong>AI Tags:</strong>
+    </p>
+
+    {% if news.tags %}
+
+        <pre>{{ news.tags }}</pre>
+
+    {% else %}
+
+        <p>No tags available.</p>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- ADMIN EDITABLE VERSION -->
+    <!-- ================================================== -->
+
+    <h3>Admin Edited Version</h3>
+
+    <p>
+        Edit the AI-generated draft below.
+        The original AI-generated content will remain preserved.
+    </p>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('admin.edit_news', news_id=news.id) }}"
+    >
+
+        <!-- ================================================== -->
+        <!-- CSRF PROTECTION -->
+        <!-- ================================================== -->
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+
+        <!-- ================================================== -->
+        <!-- FINAL HEADLINE -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="final_headline">
+
+                <strong>Final Headline:</strong>
+
+            </label>
+
+        </p>
+
+        <input
+            type="text"
+            id="final_headline"
+            name="final_headline"
+            value="{{ news.final_headline or news.ai_headline or '' }}"
+            maxlength="255"
+            style="width: 600px;"
+            required
+        >
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- FINAL SUBHEADING -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="final_subheading">
+
+                <strong>Final Subheading:</strong>
+
+            </label>
+
+        </p>
+
+        <textarea
+            id="final_subheading"
+            name="final_subheading"
+            rows="4"
+            cols="80"
+        >{{ news.final_subheading or news.ai_subheading or '' }}</textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- FINAL SUMMARY -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="final_summary">
+
+                <strong>Final Summary:</strong>
+
+            </label>
+
+        </p>
+
+        <textarea
+            id="final_summary"
+            name="final_summary"
+            rows="6"
+            cols="80"
+            required
+        >{{ news.final_summary or news.ai_summary or '' }}</textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- FINAL ARTICLE -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="final_article">
+
+                <strong>Final Article:</strong>
+
+            </label>
+
+        </p>
+
+        <textarea
+            id="final_article"
+            name="final_article"
+            rows="20"
+            cols="100"
+            required
+        >{{ news.final_article or news.ai_article or '' }}</textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- KEY FACTS -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="key_facts">
+
+                <strong>Key Facts:</strong>
+
+            </label>
+
+        </p>
+
+        <textarea
+            id="key_facts"
+            name="key_facts"
+            rows="8"
+            cols="80"
+            placeholder="Enter key facts..."
+        >{{ news.key_facts or '' }}</textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- TAGS -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="tags">
+
+                <strong>Tags:</strong>
+
+            </label>
+
+        </p>
+
+        <textarea
+            id="tags"
+            name="tags"
+            rows="4"
+            cols="80"
+            placeholder="Enter tags..."
+        >{{ news.tags or '' }}</textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- PUBLICATION OPTIONS -->
+        <!-- ================================================== -->
+
+        <h4>Publication Options</h4>
+
+
+        <p>
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="is_breaking"
+                    value="1"
+                    {% if news.is_breaking %}
+                        checked
+                    {% endif %}
+                >
+
+                🚨 Mark as Breaking News
+
+            </label>
+
+        </p>
+
+
+        <p>
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="is_featured"
+                    value="1"
+                    {% if news.is_featured %}
+                        checked
+                    {% endif %}
+                >
+
+                ⭐ Mark as Featured News
+
+            </label>
+
+        </p>
+
+
+        <br>
+
+
+        <!-- ================================================== -->
+        <!-- SAVE CHANGES -->
+        <!-- ================================================== -->
+
+        <button
+            type="submit"
+        >
+            💾 Save Changes
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- BACK TO DASHBOARD -->
+    <!-- ================================================== -->
+
+    <p>
+
+        <a href="{{ url_for('admin.dashboard') }}">
+            ← Back to Admin Dashboard
+        </a>
+
+    </p>
+
+
+    <!-- ================================================== -->
+    <!-- LOGOUT -->
+    <!-- ================================================== -->
+
+    <p>
+
+        <a href="{{ url_for('auth.logout') }}">
+            Logout
+        </a>
+
+    </p>
+
+
+</body>
+
+</html>

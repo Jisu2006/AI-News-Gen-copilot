@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Provide Additional Information - AI-NewsGen Copilot
+    </title>
+
+</head>
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- FLASH MESSAGES -->
+    <!-- ================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <p>
+                    {{ message }}
+                </p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <!-- ================================================== -->
+    <!-- HEADER -->
+    <!-- ================================================== -->
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>Provide Additional Information</h2>
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- NEWS DETAILS -->
+    <!-- ================================================== -->
+
+    <h3>News Details</h3>
+
+    <p>
+
+        <strong>Title:</strong>
+
+        {{ news.title }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Category:</strong>
+
+        {{ news.category }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Location:</strong>
+
+        {{ news.location or "Not provided" }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Status:</strong>
+
+        {{ news.status }}
+
+    </p>
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- ADMIN REQUEST -->
+    <!-- ================================================== -->
+
+    <h3>⚠️ Information / Proof Requested by Admin</h3>
+
+
+    {% if news.admin_comment %}
+
+        <p>
+
+            <strong>Admin Message:</strong>
+
+        </p>
+
+        <p>
+            {{ news.admin_comment }}
+        </p>
+
+    {% else %}
+
+        <p>
+            The admin has requested additional information.
+        </p>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- FORM -->
+    <!-- ================================================== -->
+
+    <h3>Submit Requested Information</h3>
+
+
+    <p>
+        Please provide the information or proof requested
+        by the admin.
+    </p>
+
+
+    <form
+        method="POST"
+        enctype="multipart/form-data"
+        action="{{ url_for(
+            'user.provide_information',
+            news_id=news.id
+        ) }}"
+    >
+
+        <!-- ================================================== -->
+        <!-- CSRF PROTECTION -->
+        <!-- ================================================== -->
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+
+        <!-- ================================================== -->
+        <!-- ADDITIONAL INFORMATION -->
+        <!-- ================================================== -->
+
+        {% if requested_fields.additional_information %}
+
+            <h4>📝 Additional Information</h4>
+
+            <p>
+
+                <label for="additional_information">
+
+                    <strong>
+                        Additional Details / Proof:
+                    </strong>
+
+                </label>
+
+            </p>
+
+
+            <textarea
+                id="additional_information"
+                name="additional_information"
+                rows="10"
+                cols="80"
+                placeholder="Provide the additional information requested by the admin..."
+                required
+            ></textarea>
+
+            <br><br>
+
+        {% endif %}
+
+
+        <!-- ================================================== -->
+        <!-- SOURCE URL -->
+        <!-- ================================================== -->
+
+        {% if requested_fields.url %}
+
+            <h4>🔗 Source URL</h4>
+
+            <p>
+
+                <label for="source_url">
+
+                    <strong>
+                        Source / Reference URL:
+                    </strong>
+
+                </label>
+
+            </p>
+
+
+            <input
+                type="url"
+                id="source_url"
+                name="source_url"
+                value="{{ news.source_url or '' }}"
+                placeholder="https://example.com/news"
+                style="width: 500px;"
+                required
+            >
+
+            <br><br>
+
+        {% endif %}
+
+
+        <!-- ================================================== -->
+        <!-- PHOTO / IMAGE -->
+        <!-- ================================================== -->
+
+        {% if requested_fields.image %}
+
+            <h4>📷 Photo / Image Proof</h4>
+
+            <p>
+
+                <label for="image">
+
+                    <strong>
+                        Upload Photo / Image:
+                    </strong>
+
+                </label>
+
+            </p>
+
+
+            <input
+                type="file"
+                id="image"
+                name="image"
+                accept=".jpg,.jpeg,.png,.gif,.webp"
+                required
+            >
+
+            <p>
+                Allowed formats:
+                JPG, JPEG, PNG, GIF, WEBP
+            </p>
+
+            <br>
+
+        {% endif %}
+
+
+        <!-- ================================================== -->
+        <!-- VIDEO -->
+        <!-- ================================================== -->
+
+        {% if requested_fields.video %}
+
+            <h4>🎥 Video Proof</h4>
+
+            <p>
+
+                <label for="video">
+
+                    <strong>
+                        Upload Video:
+                    </strong>
+
+                </label>
+
+            </p>
+
+
+            <input
+                type="file"
+                id="video"
+                name="video"
+                accept=".mp4,.mov,.avi,.webm"
+                required
+            >
+
+            <p>
+                Allowed formats:
+                MP4, MOV, AVI, WEBM
+            </p>
+
+            <br>
+
+        {% endif %}
+
+
+        <!-- ================================================== -->
+        <!-- SUBMIT -->
+        <!-- ================================================== -->
+
+        <button type="submit">
+
+            Submit Information & Regenerate AI Draft
+
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- NAVIGATION -->
+    <!-- ================================================== -->
+
+    <p>
+
+        <a href="{{ url_for('user.my_news') }}">
+            ← Back to My News
+        </a>
+
+    </p>
+
+
+    <p>
+
+        <a href="{{ url_for('user.dashboard') }}">
+            Back to Dashboard
+        </a>
+
+    </p>
+
+
+</body>
+
+</html>

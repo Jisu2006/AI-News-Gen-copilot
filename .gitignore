@@ -1,0 +1,19 @@
+# Environment variables and secrets
+.env
+
+# Python virtual environment
+venv/
+.venv/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Flask
+instance/
+
+# Uploaded files
+static/uploads/
+
+# IDE
+.vscode/

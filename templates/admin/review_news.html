@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Review News - AI-NewsGen Copilot</title>
+
+</head>
+
+<body>
+
+    <!-- ================================================== -->
+    <!-- FLASH MESSAGES -->
+    <!-- ================================================== -->
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+
+        {% if messages %}
+
+            {% for category, message in messages %}
+
+                <p>
+                    {{ message }}
+                </p>
+
+            {% endfor %}
+
+        {% endif %}
+
+    {% endwith %}
+
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>Admin News Review</h2>
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- ORIGINAL USER SUBMISSION -->
+    <!-- ================================================== -->
+
+    <h3>Original User Submission</h3>
+
+
+    <p>
+
+        <strong>Category:</strong>
+
+        {{ news.category }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Title:</strong>
+
+        {{ news.title }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Location:</strong>
+
+        {{ news.location or "Not provided" }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Incident Date:</strong>
+
+        {{ news.incident_date or "Not provided" }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Incident Time:</strong>
+
+        {{ news.incident_time or "Not provided" }}
+
+    </p>
+
+
+    <p>
+
+        <strong>Bullet Points:</strong>
+
+    </p>
+
+
+    <pre>{{ news.bullet_points }}</pre>
+
+
+    {% if news.additional_description %}
+
+        <p>
+
+            <strong>Additional Description:</strong>
+
+        </p>
+
+        <pre>{{ news.additional_description }}</pre>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- SOURCE URL -->
+    <!-- ================================================== -->
+
+    {% if news.source_url %}
+
+        <p>
+
+            <strong>Source URL:</strong>
+
+            <a
+                href="{{ news.source_url }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                {{ news.source_url }}
+            </a>
+
+        </p>
+
+    {% else %}
+
+        <p>
+
+            <strong>Source URL:</strong>
+
+            Not provided
+
+        </p>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- SUPPORTING INFORMATION -->
+    <!-- ================================================== -->
+
+    {% if news.supporting_information %}
+
+        <p>
+
+            <strong>Supporting Information:</strong>
+
+        </p>
+
+        <pre>{{ news.supporting_information }}</pre>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- IMAGE PREVIEW -->
+    <!-- ================================================== -->
+
+    <h3>📷 Uploaded Image</h3>
+
+
+    {% if news.image_path %}
+
+        <p>
+            The user has uploaded an image as supporting material.
+        </p>
+
+
+        <img
+            src="{{ url_for('static', filename=news.image_path) }}"
+            alt="Uploaded news image"
+            style="
+                max-width: 600px;
+                max-height: 500px;
+                border: 1px solid #ccc;
+            "
+        >
+
+
+        <p>
+
+            <a
+                href="{{ url_for('static', filename=news.image_path) }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Open Image in New Tab
+            </a>
+
+        </p>
+
+    {% else %}
+
+        <p>
+            No image was provided.
+        </p>
+
+    {% endif %}
+
+
+    <!-- ================================================== -->
+    <!-- VIDEO PREVIEW -->
+    <!-- ================================================== -->
+
+    <h3>🎥 Uploaded Video</h3>
+
+
+    {% if news.video_path %}
+
+        <p>
+            The user has uploaded a video as supporting material.
+        </p>
+
+
+        <video
+            controls
+            style="
+                max-width: 700px;
+                max-height: 500px;
+            "
+        >
+
+            <source
+                src="{{ url_for('static', filename=news.video_path) }}"
+            >
+
+            Your browser does not support video playback.
+
+        </video>
+
+
+        <p>
+
+            <a
+                href="{{ url_for('static', filename=news.video_path) }}"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Open Video in New Tab
+            </a>
+
+        </p>
+
+    {% else %}
+
+        <p>
+            No video was provided.
+        </p>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- AI GENERATED DRAFT -->
+    <!-- ================================================== -->
+
+    <h3>AI Generated Draft</h3>
+
+
+    <p>
+
+        <strong>AI Headline:</strong>
+
+    </p>
+
+
+    <h2>
+        {{ news.ai_headline }}
+    </h2>
+
+
+    <p>
+
+        <strong>AI Subheading:</strong>
+
+    </p>
+
+
+    <p>
+        {{ news.ai_subheading }}
+    </p>
+
+
+    <p>
+
+        <strong>AI Summary:</strong>
+
+    </p>
+
+
+    <p>
+        {{ news.ai_summary }}
+    </p>
+
+
+    <p>
+
+        <strong>AI Article:</strong>
+
+    </p>
+
+
+    <div>
+
+        {{ news.ai_article }}
+
+    </div>
+
+
+    <p>
+
+        <strong>Key Facts:</strong>
+
+    </p>
+
+
+    {% if news.key_facts %}
+
+        <pre>{{ news.key_facts }}</pre>
+
+    {% else %}
+
+        <p>
+            No key facts available.
+        </p>
+
+    {% endif %}
+
+
+    <p>
+
+        <strong>Tags:</strong>
+
+    </p>
+
+
+    {% if news.tags %}
+
+        <pre>{{ news.tags }}</pre>
+
+    {% else %}
+
+        <p>
+            No tags available.
+        </p>
+
+    {% endif %}
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- ADMIN ACTION -->
+    <!-- ================================================== -->
+
+    <h3>Admin Action</h3>
+
+
+    <form
+        method="POST"
+        action="{{ url_for('admin.review_news', news_id=news.id) }}"
+    >
+
+        <!-- ================================================== -->
+        <!-- CSRF PROTECTION -->
+        <!-- ================================================== -->
+
+        <input
+            type="hidden"
+            name="csrf_token"
+            value="{{ csrf_token() }}"
+        >
+
+
+        <!-- ================================================== -->
+        <!-- ADMIN COMMENT -->
+        <!-- ================================================== -->
+
+        <p>
+
+            <label for="comment">
+
+                <strong>
+                    Admin Comment:
+                </strong>
+
+            </label>
+
+        </p>
+
+
+        <textarea
+            id="comment"
+            name="comment"
+            rows="5"
+            cols="60"
+            placeholder="Enter comment if required..."
+        ></textarea>
+
+
+        <br><br>
+
+
+        <!-- ================================================== -->
+        <!-- PUBLICATION OPTIONS -->
+        <!-- ================================================== -->
+
+        <h4>Publication Options</h4>
+
+
+        <p>
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="is_breaking"
+                    value="1"
+                    {% if news.is_breaking %}
+                        checked
+                    {% endif %}
+                >
+
+                🚨 Mark as Breaking News
+
+            </label>
+
+        </p>
+
+
+        <p>
+
+            <label>
+
+                <input
+                    type="checkbox"
+                    name="is_featured"
+                    value="1"
+                    {% if news.is_featured %}
+                        checked
+                    {% endif %}
+                >
+
+                ⭐ Mark as Featured News
+
+            </label>
+
+        </p>
+
+
+        <br>
+
+
+        <!-- ================================================== -->
+        <!-- APPROVE -->
+        <!-- ================================================== -->
+
+        <button
+            type="submit"
+            name="action"
+            value="approve"
+        >
+            Approve
+        </button>
+
+
+        <!-- ================================================== -->
+        <!-- REQUEST INFORMATION -->
+        <!-- ================================================== -->
+
+        <button
+            type="submit"
+            name="action"
+            value="request_information"
+        >
+            Request Information
+        </button>
+
+
+        <!-- ================================================== -->
+        <!-- REJECT -->
+        <!-- ================================================== -->
+
+        <button
+            type="submit"
+            name="action"
+            value="reject"
+        >
+            Reject
+        </button>
+
+
+    </form>
+
+
+    <hr>
+
+
+    <!-- ================================================== -->
+    <!-- BACK TO DASHBOARD -->
+    <!-- ================================================== -->
+
+    <p>
+
+        <a href="{{ url_for('admin.dashboard') }}">
+            ← Back to Admin Dashboard
+        </a>
+
+    </p>
+
+
+    <!-- ================================================== -->
+    <!-- LOGOUT -->
+    <!-- ================================================== -->
+
+    <p>
+
+        <a href="{{ url_for('auth.logout') }}">
+            Logout
+        </a>
+
+    </p>
+
+
+</body>
+
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>User Dashboard - AI-NewsGen Copilot</title>
+
+</head>
+
+<body>
+
+    <h1>AI-NewsGen Copilot</h1>
+
+    <h2>Welcome, {{ user_name }}!</h2>
+
+    <p>User Dashboard</p>
+
+    <hr>
+
+    <h3>News</h3>
+
+    <p>
+        <a href="{{ url_for('user.submit_news') }}">
+            Submit News
+        </a>
+    </p>
+
+    <p>
+        <a href="{{ url_for('user.my_news') }}">
+            My News
+        </a>
+    </p>
+
+    <hr>
+
+    <p>
+        <a href="{{ url_for('auth.logout') }}">
+            Logout
+        </a>
+    </p>
+
+</body>
+
+</html>
