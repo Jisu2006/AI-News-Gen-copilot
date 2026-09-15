@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # AI-NewsGen Copilot
 
 ## AI-Powered Digital Newspaper and News Drafting Platform
@@ -971,3 +972,7 @@ The human-in-the-loop approach ensures that AI-generated content is not automati
 **AI-NewsGen Copilot**
 
 Developed as an academic/final-year project demonstrating the integration of Artificial Intelligence with a digital news management platform.
+=======
+# AI-News-Gen-copilot
+This is my first college project
+>>>>>>> a3760bb3cf94f999d7fe33477db81095e8c0e8d3
