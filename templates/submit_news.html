@@ -12,13 +12,176 @@
 
     <title>Submit News - AI-NewsGen Copilot</title>
 
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <!-- Application CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/app.css') }}"
+    >
+
 </head>
 
-<body>
 
-    <h1>AI-NewsGen Copilot</h1>
+<body class="bg-app">
 
-    <h2>Submit News</h2>
+
+<!-- ==================================================
+     NAVBAR
+     ================================================== -->
+
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand d-flex align-items-center gap-2"
+            href="{{ url_for('news.homepage') }}"
+        >
+            <i class="bi bi-newspaper"></i>
+            <span>AI-NewsGen Copilot</span>
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="mainNavbar"
+        >
+
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.homepage') }}"
+                    >
+                        <i class="bi bi-house-door me-1"></i>
+                        Home
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link active"
+                        aria-current="page"
+                        href="{{ url_for('user.submit_news') }}"
+                    >
+                        <i class="bi bi-send me-1"></i>
+                        Submit News
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('user.my_news') }}"
+                    >
+                        <i class="bi bi-file-earmark-text me-1"></i>
+                        My News
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('auth.logout') }}"
+                    >
+                        <i class="bi bi-box-arrow-right me-1"></i>
+                        Logout
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- ==================================================
+     PAGE HEADER
+     ================================================== -->
+
+<header class="app-header hero-section">
+
+    <div class="container py-5">
+
+        <div class="row justify-content-center text-center">
+
+            <div class="col-12 col-lg-9">
+
+                <div class="mb-3">
+
+                    <span class="category-badge">
+
+                        <i class="bi bi-send me-1"></i>
+
+                        NEWS SUBMISSION
+
+                    </span>
+
+                </div>
+
+
+                <h1 class="display-5 mb-3">
+                    Submit News
+                </h1>
+
+
+                <p class="lead mb-0">
+                    Provide incident information to create an AI-assisted news draft.
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ==================================================
+     MAIN CONTENT
+     ================================================== -->
+
+<main class="container py-5">
 
 
     <!-- ==================================================
@@ -29,369 +192,619 @@
 
         {% if messages %}
 
-            {% for category, message in messages %}
+            <div class="mb-4">
 
-                {% if category == "success" %}
+                {% for category, message in messages %}
 
-                    <div
-                        style="padding: 10px;
-                               margin: 10px 0;
-                               border: 1px solid #c3e6cb;
-                               border-radius: 5px;
-                               background-color: #d4edda;
-                               color: #155724;"
-                    >
-                        {{ message }}
-                    </div>
+                    {% if category == "success" %}
 
-                {% else %}
+                        <div
+                            class="alert alert-success d-flex align-items-center gap-2"
+                            role="alert"
+                        >
 
-                    <div
-                        style="padding: 10px;
-                               margin: 10px 0;
-                               border: 1px solid #f5c6cb;
-                               border-radius: 5px;
-                               background-color: #f8d7da;
-                               color: #721c24;"
-                    >
-                        {{ message }}
-                    </div>
+                            <i class="bi bi-check-circle-fill"></i>
 
-                {% endif %}
+                            <div>
+                                {{ message }}
+                            </div>
 
-            {% endfor %}
+                        </div>
+
+                    {% else %}
+
+                        <div
+                            class="alert alert-danger d-flex align-items-center gap-2"
+                            role="alert"
+                        >
+
+                            <i class="bi bi-exclamation-circle-fill"></i>
+
+                            <div>
+                                {{ message }}
+                            </div>
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
 
         {% endif %}
 
     {% endwith %}
 
 
-    <!-- ==================================================
-         SUBMIT NEWS FORM
-         ================================================== -->
+    <div class="row justify-content-center">
 
-    <form
-        method="POST"
-        enctype="multipart/form-data"
-    >
+        <div class="col-12 col-xl-10">
 
-        <!-- CSRF Protection -->
 
-        <input
-            type="hidden"
-            name="csrf_token"
-            value="{{ csrf_token() }}"
-        >
+            <!-- ==================================================
+                 FORM CARD
+                 ================================================== -->
 
+            <div class="dashboard-card p-4 p-md-5">
 
-        <!-- ==================================================
-             CATEGORY
-             ================================================== -->
 
-        <label>Category</label>
+                <div class="d-flex align-items-center gap-3 mb-4">
 
-        <br>
+                    <div class="category-card-icon">
 
-        <select name="category" required>
+                        <i class="bi bi-file-earmark-plus"></i>
 
-            <option value="">
-                Select Category
-            </option>
+                    </div>
 
-            <option value="Local News">
-                Local News
-            </option>
 
-            <option value="Accident">
-                Accident
-            </option>
+                    <div>
 
-            <option value="Crime">
-                Crime
-            </option>
+                        <h2 class="section-heading h3 mb-1">
+                            News Information
+                        </h2>
 
-            <option value="Sports">
-                Sports
-            </option>
+                        <p class="section-subheading mb-0">
+                            Enter the available information about the incident.
+                        </p>
 
-            <option value="Entertainment">
-                Entertainment
-            </option>
+                    </div>
 
-            <option value="Education">
-                Education
-            </option>
+                </div>
 
-            <option value="Technology">
-                Technology
-            </option>
 
-            <option value="Business">
-                Business
-            </option>
+                <!-- ==================================================
+                     FORM
+                     ================================================== -->
 
-            <option value="Weather">
-                Weather
-            </option>
+                <form
+                    method="POST"
+                    enctype="multipart/form-data"
+                >
 
-            <option value="Politics">
-                Politics
-            </option>
+                    <!-- CSRF Protection -->
 
-            <option value="Events">
-                Events
-            </option>
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="{{ csrf_token() }}"
+                    >
 
-            <option value="Other">
-                Other
-            </option>
 
-        </select>
+                    <!-- ==================================================
+                         CATEGORY
+                         ================================================== -->
 
+                    <div class="filter-group mb-4">
 
-        <br><br>
+                        <label
+                            for="category"
+                            class="form-label"
+                        >
+                            Category
+                        </label>
 
 
-        <!-- ==================================================
-             TITLE
-             ================================================== -->
+                        <select
+                            id="category"
+                            name="category"
+                            class="form-select"
+                            required
+                        >
 
-        <label>
-            News Title / Topic
-        </label>
+                            <option value="">
+                                Select Category
+                            </option>
 
-        <br>
+                            <option value="Local News">
+                                Local News
+                            </option>
 
-        <input
-            type="text"
-            name="title"
-            placeholder="Enter news topic"
-            required
-        >
+                            <option value="Accident">
+                                Accident
+                            </option>
 
+                            <option value="Crime">
+                                Crime
+                            </option>
 
-        <br><br>
+                            <option value="Sports">
+                                Sports
+                            </option>
 
+                            <option value="Entertainment">
+                                Entertainment
+                            </option>
 
-        <!-- ==================================================
-             LOCATION
-             ================================================== -->
+                            <option value="Education">
+                                Education
+                            </option>
 
-        <label>Location</label>
+                            <option value="Technology">
+                                Technology
+                            </option>
 
-        <br>
+                            <option value="Business">
+                                Business
+                            </option>
 
-        <input
-            type="text"
-            name="location"
-            placeholder="Example: Rasulgarh Square, Bhubaneswar"
-        >
+                            <option value="Weather">
+                                Weather
+                            </option>
 
+                            <option value="Politics">
+                                Politics
+                            </option>
 
-        <br><br>
+                            <option value="Events">
+                                Events
+                            </option>
 
+                            <option value="Other">
+                                Other
+                            </option>
 
-        <!-- ==================================================
-             DATE
-             ================================================== -->
+                        </select>
 
-        <label>Date</label>
+                    </div>
 
-        <br>
 
-        <input
-            type="date"
-            name="incident_date"
-        >
+                    <!-- ==================================================
+                         TITLE
+                         ================================================== -->
 
+                    <div class="filter-group mb-4">
 
-        <br><br>
+                        <label
+                            for="title"
+                            class="form-label"
+                        >
+                            News Title / Topic
+                        </label>
 
 
-        <!-- ==================================================
-             TIME
-             ================================================== -->
+                        <input
+                            type="text"
+                            id="title"
+                            name="title"
+                            class="form-control"
+                            placeholder="Enter news topic"
+                            required
+                        >
 
-        <label>Time</label>
+                    </div>
 
-        <br>
 
-        <input
-            type="time"
-            name="incident_time"
-        >
+                    <!-- ==================================================
+                         LOCATION
+                         ================================================== -->
 
+                    <div class="filter-group mb-4">
 
-        <br><br>
+                        <label
+                            for="location"
+                            class="form-label"
+                        >
+                            Location
+                        </label>
 
 
-        <!-- ==================================================
-             BULLET POINTS
-             ================================================== -->
+                        <input
+                            type="text"
+                            id="location"
+                            name="location"
+                            class="form-control"
+                            placeholder="Example: Rasulgarh Square, Bhubaneswar"
+                        >
 
-        <label>Bullet Points</label>
+                    </div>
 
-        <br>
 
-        <textarea
-            name="bullet_points"
-            rows="8"
-            cols="70"
-            placeholder="• First point&#10;• Second point&#10;• Third point"
-            required
-        ></textarea>
+                    <!-- ==================================================
+                         DATE & TIME
+                         ================================================== -->
 
+                    <div class="row g-4 mb-4">
 
-        <br><br>
+                        <div class="col-12 col-md-6">
 
+                            <div class="filter-group">
 
-        <!-- ==================================================
-             ADDITIONAL DESCRIPTION
-             ================================================== -->
+                                <label
+                                    for="incident_date"
+                                    class="form-label"
+                                >
+                                    Date
+                                </label>
 
-        <label>
-            Additional Description
-        </label>
 
-        <br>
+                                <input
+                                    type="date"
+                                    id="incident_date"
+                                    name="incident_date"
+                                    class="form-control"
+                                >
 
-        <textarea
-            name="additional_description"
-            rows="5"
-            cols="70"
-            placeholder="Additional information..."
-        ></textarea>
+                            </div>
 
+                        </div>
 
-        <br><br>
 
+                        <div class="col-12 col-md-6">
 
-        <!-- ==================================================
-             IMAGE
-             ================================================== -->
+                            <div class="filter-group">
 
-        <label>
-            Image (Optional)
-        </label>
+                                <label
+                                    for="incident_time"
+                                    class="form-label"
+                                >
+                                    Time
+                                </label>
 
-        <br>
 
-        <input
-            type="file"
-            name="image"
-            accept=".jpg,.jpeg,.png,.gif,.webp"
-        >
+                                <input
+                                    type="time"
+                                    id="incident_time"
+                                    name="incident_time"
+                                    class="form-control"
+                                >
 
+                            </div>
 
-        <br><br>
+                        </div>
 
+                    </div>
 
-        <!-- ==================================================
-             VIDEO
-             ================================================== -->
 
-        <label>
-            Video (Optional)
-        </label>
+                    <!-- ==================================================
+                         BULLET POINTS
+                         ================================================== -->
 
-        <br>
+                    <div class="filter-group mb-4">
 
-        <input
-            type="file"
-            name="video"
-            accept=".mp4,.mov,.avi,.webm"
-        >
+                        <label
+                            for="bullet_points"
+                            class="form-label"
+                        >
+                            Bullet Points
+                        </label>
 
 
-        <br><br>
+                        <textarea
+                            id="bullet_points"
+                            name="bullet_points"
+                            class="form-control"
+                            rows="8"
+                            placeholder="• First point&#10;• Second point&#10;• Third point"
+                            required
+                        ></textarea>
 
 
-        <!-- ==================================================
-             SOURCE URL
-             ================================================== -->
+                        <div class="form-text">
+                            Provide the important facts or points about the incident.
+                        </div>
 
-        <label>
-            Source URL
-        </label>
+                    </div>
 
-        <br>
 
-        <input
-            type="url"
-            name="source_url"
-            placeholder="https://example.com"
-        >
+                    <!-- ==================================================
+                         ADDITIONAL DESCRIPTION
+                         ================================================== -->
 
+                    <div class="filter-group mb-4">
 
-        <br><br>
+                        <label
+                            for="additional_description"
+                            class="form-label"
+                        >
+                            Additional Description
+                        </label>
 
 
-        <!-- ==================================================
-             SUPPORTING INFORMATION
-             ================================================== -->
+                        <textarea
+                            id="additional_description"
+                            name="additional_description"
+                            class="form-control"
+                            rows="5"
+                            placeholder="Additional information..."
+                        ></textarea>
 
-        <label>
-            Supporting Information
-        </label>
+                    </div>
 
-        <br>
 
-        <textarea
-            name="supporting_information"
-            rows="5"
-            cols="70"
-            placeholder="Official notice, event link, additional evidence information..."
-        ></textarea>
+                    <!-- ==================================================
+                         MEDIA
+                         ================================================== -->
 
+                    <div class="row g-4 mb-4">
 
-        <br><br>
 
+                        <!-- IMAGE -->
 
-        <!-- ==================================================
-             BUTTONS
-             ================================================== -->
+                        <div class="col-12 col-md-6">
 
-        <button
-            type="submit"
-            name="action"
-            value="draft"
-        >
-            Save Draft
-        </button>
+                            <div class="filter-group">
 
+                                <label
+                                    for="image"
+                                    class="form-label"
+                                >
+                                    <i class="bi bi-image me-1"></i>
+                                    Image
+                                    <span class="text-muted-app">
+                                        (Optional)
+                                    </span>
+                                </label>
 
-        &nbsp;&nbsp;
 
+                                <input
+                                    type="file"
+                                    id="image"
+                                    name="image"
+                                    class="form-control"
+                                    accept=".jpg,.jpeg,.png,.gif,.webp"
+                                >
 
-        <button
-            type="submit"
-            name="action"
-            value="submit"
-        >
-            Submit News
-        </button>
+                            </div>
 
-    </form>
+                        </div>
 
 
-    <br><br>
+                        <!-- VIDEO -->
 
+                        <div class="col-12 col-md-6">
 
-    <!-- ==================================================
-         NAVIGATION
-         ================================================== -->
+                            <div class="filter-group">
 
-    <a href="{{ url_for('user.my_news') }}">
-        My News
-    </a>
+                                <label
+                                    for="video"
+                                    class="form-label"
+                                >
+                                    <i class="bi bi-camera-video me-1"></i>
+                                    Video
+                                    <span class="text-muted-app">
+                                        (Optional)
+                                    </span>
+                                </label>
 
 
-    <br><br>
+                                <input
+                                    type="file"
+                                    id="video"
+                                    name="video"
+                                    class="form-control"
+                                    accept=".mp4,.mov,.avi,.webm"
+                                >
 
+                            </div>
 
-    <a href="{{ url_for('user.dashboard') }}">
-        Back to Dashboard
-    </a>
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         SOURCE URL
+                         ================================================== -->
+
+                    <div class="filter-group mb-4">
+
+                        <label
+                            for="source_url"
+                            class="form-label"
+                        >
+                            <i class="bi bi-link-45deg me-1"></i>
+                            Source URL
+                        </label>
+
+
+                        <input
+                            type="url"
+                            id="source_url"
+                            name="source_url"
+                            class="form-control"
+                            placeholder="https://example.com"
+                        >
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         SUPPORTING INFORMATION
+                         ================================================== -->
+
+                    <div class="filter-group mb-4">
+
+                        <label
+                            for="supporting_information"
+                            class="form-label"
+                        >
+                            Supporting Information
+                        </label>
+
+
+                        <textarea
+                            id="supporting_information"
+                            name="supporting_information"
+                            class="form-control"
+                            rows="5"
+                            placeholder="Official notice, event link, additional evidence information..."
+                        ></textarea>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         INFORMATION NOTE
+                         ================================================== -->
+
+                    <div
+                        class="alert alert-light border d-flex align-items-start gap-3 mb-4"
+                    >
+
+                        <i class="bi bi-info-circle fs-4 text-accent"></i>
+
+                        <div>
+
+                            <strong>Important:</strong>
+
+                            Provide only the information you have about the
+                            incident. The AI will use the submitted information
+                            to prepare a structured news draft.
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- ==================================================
+                         BUTTONS
+                         ================================================== -->
+
+                    <div
+                        class="d-flex flex-column flex-sm-row gap-3 pt-2"
+                    >
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="draft"
+                            class="btn secondary-btn px-4 py-2"
+                        >
+
+                            <i class="bi bi-file-earmark me-2"></i>
+
+                            Save Draft
+
+                        </button>
+
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="submit"
+                            class="btn primary-btn px-4 py-2"
+                        >
+
+                            <i class="bi bi-send me-2"></i>
+
+                            Submit News
+
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+
+            <!-- ==================================================
+                 NAVIGATION
+                 ================================================== -->
+
+            <div class="d-flex flex-column flex-sm-row justify-content-between gap-3 mt-4">
+
+                <a
+                    href="{{ url_for('user.my_news') }}"
+                    class="btn secondary-btn px-4 py-2"
+                >
+
+                    <i class="bi bi-file-earmark-text me-2"></i>
+
+                    My News
+
+                </a>
+
+
+                <a
+                    href="{{ url_for('user.dashboard') }}"
+                    class="btn secondary-btn px-4 py-2"
+                >
+
+                    <i class="bi bi-arrow-left me-2"></i>
+
+                    Back to Dashboard
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</main>
+
+
+<!-- ==================================================
+     FOOTER
+     ================================================== -->
+
+<footer class="app-footer mt-5">
+
+    <div class="container py-4">
+
+        <div class="row align-items-center gy-3">
+
+            <div class="col-12 col-md-6">
+
+                <p class="app-footer-title mb-1">
+
+                    <i class="bi bi-newspaper me-1"></i>
+
+                    AI-NewsGen Copilot
+
+                </p>
+
+
+                <p class="app-footer-text mb-0">
+                    AI-Powered Digital Newspaper Platform
+                </p>
+
+            </div>
+
+
+            <div class="col-12 col-md-6 text-md-end">
+
+                <p class="app-footer-text mb-0">
+                    © 2026 AI-NewsGen Copilot
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
 
 
 </body>

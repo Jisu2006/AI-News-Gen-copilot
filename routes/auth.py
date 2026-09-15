@@ -322,5 +322,5 @@ def logout():
 
     # After logout go to USER login
     return redirect(
-        url_for("auth.user_login")
+        url_for("news.homepage")
     )

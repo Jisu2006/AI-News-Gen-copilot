@@ -12,536 +12,1253 @@
 
     <title>Review News - AI-NewsGen Copilot</title>
 
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Bootstrap Icons -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+
+    <!-- Application CSS -->
+
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/app.css') }}"
+    >
+
 </head>
 
-<body>
 
-    <!-- ================================================== -->
-    <!-- FLASH MESSAGES -->
-    <!-- ================================================== -->
+<body class="bg-app">
+
+
+<!-- ==================================================
+     NAVBAR
+     ================================================== -->
+
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand d-flex align-items-center gap-2"
+            href="{{ url_for('news.homepage') }}"
+        >
+
+            <i class="bi bi-newspaper"></i>
+
+            <span>
+                AI-NewsGen Copilot
+            </span>
+
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#adminNavbar"
+            aria-controls="adminNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="adminNavbar"
+        >
+
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.homepage') }}"
+                    >
+
+                        <i class="bi bi-house-door me-1"></i>
+
+                        Public Home
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link active"
+                        href="{{ url_for('admin.dashboard') }}"
+                    >
+
+                        <i class="bi bi-speedometer2 me-1"></i>
+
+                        Admin Dashboard
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('auth.logout') }}"
+                    >
+
+                        <i class="bi bi-box-arrow-right me-1"></i>
+
+                        Logout
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- ==================================================
+     HEADER
+     ================================================== -->
+
+<header class="app-header hero-section">
+
+    <div class="container py-4">
+
+        <div class="d-flex align-items-center gap-3">
+
+            <div>
+
+                <span class="category-badge">
+
+                    <i class="bi bi-clipboard-check me-1"></i>
+
+                    NEWS REVIEW
+
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <h1 class="display-6 mt-3 mb-2">
+
+            Admin News Review
+
+        </h1>
+
+
+        <p class="lead mb-0">
+
+            Review the original submission and AI-generated draft
+            before taking an administrative action.
+
+        </p>
+
+    </div>
+
+</header>
+
+
+<!-- ==================================================
+     MAIN CONTENT
+     ================================================== -->
+
+<main class="container py-4">
+
+
+    <!-- ==================================================
+         FLASH MESSAGES
+         ================================================== -->
 
     {% with messages = get_flashed_messages(with_categories=true) %}
 
         {% if messages %}
 
-            {% for category, message in messages %}
+            <div class="mb-4">
 
-                <p>
-                    {{ message }}
-                </p>
+                {% for category, message in messages %}
 
-            {% endfor %}
+                    {% if category == "success" %}
+
+                        <div
+                            class="alert alert-success"
+                            role="alert"
+                        >
+
+                            <i class="bi bi-check-circle-fill me-2"></i>
+
+                            {{ message }}
+
+                        </div>
+
+                    {% else %}
+
+                        <div
+                            class="alert alert-danger"
+                            role="alert"
+                        >
+
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+
+                            {{ message }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
 
         {% endif %}
 
     {% endwith %}
 
 
-    <h1>AI-NewsGen Copilot</h1>
+    <!-- ==================================================
+         ORIGINAL USER SUBMISSION
+         ================================================== -->
 
-    <h2>Admin News Review</h2>
+    <section class="mb-4">
 
-    <hr>
+        <div class="dashboard-card p-4">
 
+            <div class="d-flex align-items-center gap-2 mb-4">
 
-    <!-- ================================================== -->
-    <!-- ORIGINAL USER SUBMISSION -->
-    <!-- ================================================== -->
+                <i class="bi bi-person-lines-fill text-accent fs-4"></i>
 
-    <h3>Original User Submission</h3>
+                <div>
 
+                    <h2 class="section-heading h4 mb-1">
 
-    <p>
+                        Original User Submission
 
-        <strong>Category:</strong>
+                    </h2>
 
-        {{ news.category }}
+                    <p class="section-subheading mb-0">
 
-    </p>
+                        Information submitted by the user.
 
+                    </p>
 
-    <p>
+                </div>
 
-        <strong>Title:</strong>
-
-        {{ news.title }}
-
-    </p>
-
-
-    <p>
-
-        <strong>Location:</strong>
-
-        {{ news.location or "Not provided" }}
-
-    </p>
+            </div>
 
 
-    <p>
+            <!-- Basic Information -->
 
-        <strong>Incident Date:</strong>
-
-        {{ news.incident_date or "Not provided" }}
-
-    </p>
+            <div class="row g-3">
 
 
-    <p>
+                <div class="col-12 col-md-6">
 
-        <strong>Incident Time:</strong>
+                    <div class="bg-app border-app rounded-app p-3 h-100">
 
-        {{ news.incident_time or "Not provided" }}
+                        <div class="text-muted-app small mb-1">
 
-    </p>
+                            Category
 
+                        </div>
 
-    <p>
+                        <div class="fw-semibold">
 
-        <strong>Bullet Points:</strong>
+                            {{ news.category }}
 
-    </p>
+                        </div>
 
+                    </div>
 
-    <pre>{{ news.bullet_points }}</pre>
-
-
-    {% if news.additional_description %}
-
-        <p>
-
-            <strong>Additional Description:</strong>
-
-        </p>
-
-        <pre>{{ news.additional_description }}</pre>
-
-    {% endif %}
+                </div>
 
 
-    <!-- ================================================== -->
-    <!-- SOURCE URL -->
-    <!-- ================================================== -->
+                <div class="col-12 col-md-6">
 
-    {% if news.source_url %}
+                    <div class="bg-app border-app rounded-app p-3 h-100">
 
-        <p>
+                        <div class="text-muted-app small mb-1">
 
-            <strong>Source URL:</strong>
+                            Title
 
-            <a
-                href="{{ news.source_url }}"
-                target="_blank"
-                rel="noopener noreferrer"
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            {{ news.title }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-6">
+
+                    <div class="bg-app border-app rounded-app p-3 h-100">
+
+                        <div class="text-muted-app small mb-1">
+
+                            <i class="bi bi-geo-alt me-1"></i>
+
+                            Location
+
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            {{ news.location or "Not provided" }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-3">
+
+                    <div class="bg-app border-app rounded-app p-3 h-100">
+
+                        <div class="text-muted-app small mb-1">
+
+                            <i class="bi bi-calendar3 me-1"></i>
+
+                            Incident Date
+
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            {{ news.incident_date or "Not provided" }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <div class="col-12 col-md-3">
+
+                    <div class="bg-app border-app rounded-app p-3 h-100">
+
+                        <div class="text-muted-app small mb-1">
+
+                            <i class="bi bi-clock me-1"></i>
+
+                            Incident Time
+
+                        </div>
+
+                        <div class="fw-semibold">
+
+                            {{ news.incident_time or "Not provided" }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Bullet Points -->
+
+            <div class="mt-4">
+
+                <label class="form-label">
+
+                    <i class="bi bi-list-ul me-1"></i>
+
+                    Bullet Points
+
+                </label>
+
+
+                <div class="bg-app border-app rounded-app p-3">
+
+                    <div class="text-secondary-app text-break">
+
+                        {{ news.bullet_points }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Additional Description -->
+
+            {% if news.additional_description %}
+
+                <div class="mt-3">
+
+                    <label class="form-label">
+
+                        <i class="bi bi-text-paragraph me-1"></i>
+
+                        Additional Description
+
+                    </label>
+
+
+                    <div class="bg-app border-app rounded-app p-3">
+
+                        <div class="text-secondary-app text-break">
+
+                            {{ news.additional_description }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+
+            <!-- Source URL -->
+
+            <div class="mt-3">
+
+                <label class="form-label">
+
+                    <i class="bi bi-link-45deg me-1"></i>
+
+                    Source URL
+
+                </label>
+
+
+                {% if news.source_url %}
+
+                    <div class="bg-app border-app rounded-app p-3 text-break">
+
+                        <a
+                            href="{{ news.source_url }}"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            class="text-accent"
+                        >
+
+                            {{ news.source_url }}
+
+                            <i class="bi bi-box-arrow-up-right ms-1"></i>
+
+                        </a>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="bg-app border-app rounded-app p-3 text-muted-app">
+
+                        Not provided
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Supporting Information -->
+
+            {% if news.supporting_information %}
+
+                <div class="mt-3">
+
+                    <label class="form-label">
+
+                        <i class="bi bi-info-circle me-1"></i>
+
+                        Supporting Information
+
+                    </label>
+
+
+                    <div class="bg-app border-app rounded-app p-3">
+
+                        <div class="text-secondary-app text-break">
+
+                            {{ news.supporting_information }}
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            {% endif %}
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         UPLOADED MEDIA
+         ================================================== -->
+
+    <section class="mb-4">
+
+        <div class="dashboard-card p-4">
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+
+                <i class="bi bi-images text-accent fs-4"></i>
+
+                <div>
+
+                    <h2 class="section-heading h4 mb-1">
+
+                        Uploaded Supporting Material
+
+                    </h2>
+
+                    <p class="section-subheading mb-0">
+
+                        Image and video provided with the submission.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="row g-4">
+
+
+                <!-- Image -->
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="bg-app border-app rounded-app p-3 h-100">
+
+                        <h3 class="dashboard-card-title h6 mb-3">
+
+                            <i class="bi bi-image me-1"></i>
+
+                            Uploaded Image
+
+                        </h3>
+
+
+                        {% if news.image_path %}
+
+                            <p class="text-secondary-app small">
+
+                                The user has uploaded an image
+                                as supporting material.
+
+                            </p>
+
+
+                            <img
+                                src="{{ url_for(
+                                    'static',
+                                    filename=news.image_path
+                                ) }}"
+                                alt="Uploaded news image"
+                                class="news-detail-image"
+                            >
+
+
+                            <div class="mt-3">
+
+                                <a
+                                    href="{{ url_for(
+                                        'static',
+                                        filename=news.image_path
+                                    ) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="btn secondary-btn btn-sm"
+                                >
+
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+
+                                    Open Image
+
+                                </a>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="empty-state py-4">
+
+                                <div class="empty-state-icon">
+
+                                    <i class="bi bi-image"></i>
+
+                                </div>
+
+                                <h3 class="h6">
+
+                                    No Image
+
+                                </h3>
+
+                                <p class="mb-0 small">
+
+                                    No image was provided.
+
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+
+                <!-- Video -->
+
+                <div class="col-12 col-lg-6">
+
+                    <div class="bg-app border-app rounded-app p-3 h-100">
+
+                        <h3 class="dashboard-card-title h6 mb-3">
+
+                            <i class="bi bi-camera-video me-1"></i>
+
+                            Uploaded Video
+
+                        </h3>
+
+
+                        {% if news.video_path %}
+
+                            <p class="text-secondary-app small">
+
+                                The user has uploaded a video
+                                as supporting material.
+
+                            </p>
+
+
+                            <video
+                                controls
+                                class="news-detail-video"
+                            >
+
+                                <source
+                                    src="{{ url_for(
+                                        'static',
+                                        filename=news.video_path
+                                    ) }}"
+                                >
+
+                                Your browser does not support
+                                video playback.
+
+                            </video>
+
+
+                            <div class="mt-3">
+
+                                <a
+                                    href="{{ url_for(
+                                        'static',
+                                        filename=news.video_path
+                                    ) }}"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    class="btn secondary-btn btn-sm"
+                                >
+
+                                    <i class="bi bi-box-arrow-up-right me-1"></i>
+
+                                    Open Video
+
+                                </a>
+
+                            </div>
+
+                        {% else %}
+
+                            <div class="empty-state py-4">
+
+                                <div class="empty-state-icon">
+
+                                    <i class="bi bi-camera-video"></i>
+
+                                </div>
+
+                                <h3 class="h6">
+
+                                    No Video
+
+                                </h3>
+
+                                <p class="mb-0 small">
+
+                                    No video was provided.
+
+                                </p>
+
+                            </div>
+
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         AI GENERATED DRAFT
+         ================================================== -->
+
+    <section class="mb-4">
+
+        <div class="dashboard-card p-4">
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+
+                <i class="bi bi-stars text-accent fs-4"></i>
+
+                <div>
+
+                    <h2 class="section-heading h4 mb-1">
+
+                        AI Generated Draft
+
+                    </h2>
+
+                    <p class="section-subheading mb-0">
+
+                        Draft generated from the submitted information.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI Headline -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    AI Headline
+
+                </label>
+
+
+                <div class="bg-app border-app rounded-app p-3">
+
+                    <h3 class="section-heading h4 mb-0">
+
+                        {{ news.ai_headline }}
+
+                    </h3>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI Subheading -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    AI Subheading
+
+                </label>
+
+
+                <div class="bg-app border-app rounded-app p-3">
+
+                    <div class="text-secondary-app text-break">
+
+                        {{ news.ai_subheading }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI Summary -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    AI Summary
+
+                </label>
+
+
+                <div class="bg-app border-app rounded-app p-3">
+
+                    <div class="text-secondary-app text-break">
+
+                        {{ news.ai_summary }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- AI Article -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    AI Article
+
+                </label>
+
+
+                <div class="bg-app border-app rounded-app p-3">
+
+                    <div class="news-detail-article text-break">
+
+                        {{ news.ai_article }}
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Key Facts -->
+
+            <div class="mb-4">
+
+                <label class="form-label">
+
+                    <i class="bi bi-check2-square me-1"></i>
+
+                    Key Facts
+
+                </label>
+
+
+                {% if news.key_facts %}
+
+                    <div class="bg-app border-app rounded-app p-3">
+
+                        <div class="text-secondary-app text-break">
+
+                            {{ news.key_facts }}
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="bg-app border-app rounded-app p-3 text-muted-app">
+
+                        No key facts available.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+
+            <!-- Tags -->
+
+            <div>
+
+                <label class="form-label">
+
+                    <i class="bi bi-tags me-1"></i>
+
+                    Tags
+
+                </label>
+
+
+                {% if news.tags %}
+
+                    <div class="bg-app border-app rounded-app p-3">
+
+                        <div class="text-secondary-app text-break">
+
+                            {{ news.tags }}
+
+                        </div>
+
+                    </div>
+
+                {% else %}
+
+                    <div class="bg-app border-app rounded-app p-3 text-muted-app">
+
+                        No tags available.
+
+                    </div>
+
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         ADMIN ACTION
+         ================================================== -->
+
+    <section class="mb-4">
+
+        <div class="dashboard-card p-4">
+
+            <div class="d-flex align-items-center gap-2 mb-4">
+
+                <i class="bi bi-shield-check text-accent fs-4"></i>
+
+                <div>
+
+                    <h2 class="section-heading h4 mb-1">
+
+                        Admin Action
+
+                    </h2>
+
+                    <p class="section-subheading mb-0">
+
+                        Choose the appropriate action for this news submission.
+
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{{ url_for(
+                    'admin.review_news',
+                    news_id=news.id
+                ) }}"
             >
-                {{ news.source_url }}
-            </a>
-
-        </p>
-
-    {% else %}
-
-        <p>
-
-            <strong>Source URL:</strong>
-
-            Not provided
-
-        </p>
-
-    {% endif %}
 
 
-    <!-- ================================================== -->
-    <!-- SUPPORTING INFORMATION -->
-    <!-- ================================================== -->
+                <!-- CSRF -->
 
-    {% if news.supporting_information %}
-
-        <p>
-
-            <strong>Supporting Information:</strong>
-
-        </p>
-
-        <pre>{{ news.supporting_information }}</pre>
-
-    {% endif %}
+                <input
+                    type="hidden"
+                    name="csrf_token"
+                    value="{{ csrf_token() }}"
+                >
 
 
-    <!-- ================================================== -->
-    <!-- IMAGE PREVIEW -->
-    <!-- ================================================== -->
+                <!-- Admin Comment -->
 
-    <h3>📷 Uploaded Image</h3>
+                <div class="mb-4">
+
+                    <label
+                        for="comment"
+                        class="form-label"
+                    >
+
+                        <i class="bi bi-chat-left-text me-1"></i>
+
+                        Admin Comment
+
+                    </label>
 
 
-    {% if news.image_path %}
+                    <textarea
+                        id="comment"
+                        name="comment"
+                        rows="4"
+                        class="form-control"
+                        placeholder="Enter comment if required..."
+                    ></textarea>
 
-        <p>
-            The user has uploaded an image as supporting material.
-        </p>
+                </div>
 
 
-        <img
-            src="{{ url_for('static', filename=news.image_path) }}"
-            alt="Uploaded news image"
-            style="
-                max-width: 600px;
-                max-height: 500px;
-                border: 1px solid #ccc;
-            "
+                <!-- Publication Options -->
+
+                <div class="mb-4">
+
+                    <h3 class="dashboard-card-title h6 mb-3">
+
+                        <i class="bi bi-megaphone me-1"></i>
+
+                        Publication Options
+
+                    </h3>
+
+
+                    <div class="row g-3">
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="form-check bg-app border-app rounded-app p-3">
+
+                                <input
+                                    class="form-check-input ms-0 me-2"
+                                    type="checkbox"
+                                    name="is_breaking"
+                                    value="1"
+                                    id="is_breaking"
+                                    {% if news.is_breaking %}
+                                        checked
+                                    {% endif %}
+                                >
+
+
+                                <label
+                                    class="form-check-label fw-semibold"
+                                    for="is_breaking"
+                                >
+
+                                    <i class="bi bi-lightning-charge text-danger me-1"></i>
+
+                                    Mark as Breaking News
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="col-12 col-md-6">
+
+                            <div class="form-check bg-app border-app rounded-app p-3">
+
+                                <input
+                                    class="form-check-input ms-0 me-2"
+                                    type="checkbox"
+                                    name="is_featured"
+                                    value="1"
+                                    id="is_featured"
+                                    {% if news.is_featured %}
+                                        checked
+                                    {% endif %}
+                                >
+
+
+                                <label
+                                    class="form-check-label fw-semibold"
+                                    for="is_featured"
+                                >
+
+                                    <i class="bi bi-star text-warning me-1"></i>
+
+                                    Mark as Featured News
+
+                                </label>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- Action Buttons -->
+
+                <div class="border-top border-app pt-4">
+
+                    <div class="d-flex flex-column flex-md-row gap-2">
+
+
+                        <!-- Approve -->
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="approve"
+                            class="btn btn-success"
+                        >
+
+                            <i class="bi bi-check-circle me-1"></i>
+
+                            Approve
+
+                        </button>
+
+
+                        <!-- Request Information -->
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="request_information"
+                            class="btn btn-warning"
+                        >
+
+                            <i class="bi bi-info-circle me-1"></i>
+
+                            Request Information
+
+                        </button>
+
+
+                        <!-- Reject -->
+
+                        <button
+                            type="submit"
+                            name="action"
+                            value="reject"
+                            class="btn btn-danger"
+                        >
+
+                            <i class="bi bi-x-circle me-1"></i>
+
+                            Reject
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         NAVIGATION
+         ================================================== -->
+
+    <div class="d-flex flex-column flex-sm-row gap-2 mb-4">
+
+
+        <a
+            href="{{ url_for('admin.dashboard') }}"
+            class="btn secondary-btn"
         >
 
+            <i class="bi bi-arrow-left me-1"></i>
 
-        <p>
+            Back to Admin Dashboard
 
-            <a
-                href="{{ url_for('static', filename=news.image_path) }}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Open Image in New Tab
-            </a>
-
-        </p>
-
-    {% else %}
-
-        <p>
-            No image was provided.
-        </p>
-
-    {% endif %}
+        </a>
 
 
-    <!-- ================================================== -->
-    <!-- VIDEO PREVIEW -->
-    <!-- ================================================== -->
-
-    <h3>🎥 Uploaded Video</h3>
-
-
-    {% if news.video_path %}
-
-        <p>
-            The user has uploaded a video as supporting material.
-        </p>
-
-
-        <video
-            controls
-            style="
-                max-width: 700px;
-                max-height: 500px;
-            "
+        <a
+            href="{{ url_for('auth.logout') }}"
+            class="btn secondary-btn"
         >
 
-            <source
-                src="{{ url_for('static', filename=news.video_path) }}"
-            >
+            <i class="bi bi-box-arrow-right me-1"></i>
 
-            Your browser does not support video playback.
+            Logout
 
-        </video>
-
-
-        <p>
-
-            <a
-                href="{{ url_for('static', filename=news.video_path) }}"
-                target="_blank"
-                rel="noopener noreferrer"
-            >
-                Open Video in New Tab
-            </a>
-
-        </p>
-
-    {% else %}
-
-        <p>
-            No video was provided.
-        </p>
-
-    {% endif %}
-
-
-    <hr>
-
-
-    <!-- ================================================== -->
-    <!-- AI GENERATED DRAFT -->
-    <!-- ================================================== -->
-
-    <h3>AI Generated Draft</h3>
-
-
-    <p>
-
-        <strong>AI Headline:</strong>
-
-    </p>
-
-
-    <h2>
-        {{ news.ai_headline }}
-    </h2>
-
-
-    <p>
-
-        <strong>AI Subheading:</strong>
-
-    </p>
-
-
-    <p>
-        {{ news.ai_subheading }}
-    </p>
-
-
-    <p>
-
-        <strong>AI Summary:</strong>
-
-    </p>
-
-
-    <p>
-        {{ news.ai_summary }}
-    </p>
-
-
-    <p>
-
-        <strong>AI Article:</strong>
-
-    </p>
-
-
-    <div>
-
-        {{ news.ai_article }}
+        </a>
 
     </div>
 
+</main>
 
-    <p>
 
-        <strong>Key Facts:</strong>
+<!-- ==================================================
+     FOOTER
+     ================================================== -->
 
-    </p>
+<footer class="app-footer">
 
+    <div class="container py-3">
 
-    {% if news.key_facts %}
+        <div class="row align-items-center gy-2">
 
-        <pre>{{ news.key_facts }}</pre>
+            <div class="col-12 col-md-6">
 
-    {% else %}
+                <p class="app-footer-title mb-0">
 
-        <p>
-            No key facts available.
-        </p>
+                    <i class="bi bi-shield-check me-1"></i>
 
-    {% endif %}
+                    AI-NewsGen Copilot — Admin
 
+                </p>
 
-    <p>
+            </div>
 
-        <strong>Tags:</strong>
 
-    </p>
+            <div class="col-12 col-md-6 text-md-end">
 
+                <p class="app-footer-text mb-0">
 
-    {% if news.tags %}
+                    © 2026 AI-NewsGen Copilot
 
-        <pre>{{ news.tags }}</pre>
+                </p>
 
-    {% else %}
+            </div>
 
-        <p>
-            No tags available.
-        </p>
+        </div>
 
-    {% endif %}
+    </div>
 
+</footer>
 
-    <hr>
 
+<!-- Bootstrap JS -->
 
-    <!-- ================================================== -->
-    <!-- ADMIN ACTION -->
-    <!-- ================================================== -->
-
-    <h3>Admin Action</h3>
-
-
-    <form
-        method="POST"
-        action="{{ url_for('admin.review_news', news_id=news.id) }}"
-    >
-
-        <!-- ================================================== -->
-        <!-- CSRF PROTECTION -->
-        <!-- ================================================== -->
-
-        <input
-            type="hidden"
-            name="csrf_token"
-            value="{{ csrf_token() }}"
-        >
-
-
-        <!-- ================================================== -->
-        <!-- ADMIN COMMENT -->
-        <!-- ================================================== -->
-
-        <p>
-
-            <label for="comment">
-
-                <strong>
-                    Admin Comment:
-                </strong>
-
-            </label>
-
-        </p>
-
-
-        <textarea
-            id="comment"
-            name="comment"
-            rows="5"
-            cols="60"
-            placeholder="Enter comment if required..."
-        ></textarea>
-
-
-        <br><br>
-
-
-        <!-- ================================================== -->
-        <!-- PUBLICATION OPTIONS -->
-        <!-- ================================================== -->
-
-        <h4>Publication Options</h4>
-
-
-        <p>
-
-            <label>
-
-                <input
-                    type="checkbox"
-                    name="is_breaking"
-                    value="1"
-                    {% if news.is_breaking %}
-                        checked
-                    {% endif %}
-                >
-
-                🚨 Mark as Breaking News
-
-            </label>
-
-        </p>
-
-
-        <p>
-
-            <label>
-
-                <input
-                    type="checkbox"
-                    name="is_featured"
-                    value="1"
-                    {% if news.is_featured %}
-                        checked
-                    {% endif %}
-                >
-
-                ⭐ Mark as Featured News
-
-            </label>
-
-        </p>
-
-
-        <br>
-
-
-        <!-- ================================================== -->
-        <!-- APPROVE -->
-        <!-- ================================================== -->
-
-        <button
-            type="submit"
-            name="action"
-            value="approve"
-        >
-            Approve
-        </button>
-
-
-        <!-- ================================================== -->
-        <!-- REQUEST INFORMATION -->
-        <!-- ================================================== -->
-
-        <button
-            type="submit"
-            name="action"
-            value="request_information"
-        >
-            Request Information
-        </button>
-
-
-        <!-- ================================================== -->
-        <!-- REJECT -->
-        <!-- ================================================== -->
-
-        <button
-            type="submit"
-            name="action"
-            value="reject"
-        >
-            Reject
-        </button>
-
-
-    </form>
-
-
-    <hr>
-
-
-    <!-- ================================================== -->
-    <!-- BACK TO DASHBOARD -->
-    <!-- ================================================== -->
-
-    <p>
-
-        <a href="{{ url_for('admin.dashboard') }}">
-            ← Back to Admin Dashboard
-        </a>
-
-    </p>
-
-
-    <!-- ================================================== -->
-    <!-- LOGOUT -->
-    <!-- ================================================== -->
-
-    <p>
-
-        <a href="{{ url_for('auth.logout') }}">
-            Logout
-        </a>
-
-    </p>
-
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
 
 </body>
 

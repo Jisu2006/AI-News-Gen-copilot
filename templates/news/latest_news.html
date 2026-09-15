@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Latest News - AI-NewsGen Copilot</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <!-- Application CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/app.css') }}"
+    >
+</head>
+
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+    <div class="container">
+
+        <a
+            class="navbar-brand d-flex align-items-center gap-2"
+            href="{{ url_for('news.homepage') }}"
+        >
+            <i class="bi bi-newspaper"></i>
+            <span>AI-NewsGen Copilot</span>
+        </a>
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="mainNavbar">
+
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.homepage') }}"
+                    >
+                        <i class="bi bi-house-door me-1"></i>
+                        Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link active"
+                        aria-current="page"
+                        href="{{ url_for('news.latest_news_page') }}"
+                    >
+                        <i class="bi bi-clock-history me-1"></i>
+                        Latest News
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.breaking_news_page') }}"
+                    >
+                        <i class="bi bi-lightning-charge me-1"></i>
+                        Breaking News
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.featured_news_page') }}"
+                    >
+                        <i class="bi bi-star me-1"></i>
+                        Featured News
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.categories_page') }}"
+                    >
+                        <i class="bi bi-grid-fill me-1"></i>
+                        Categories
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.about_page') }}"
+                    >
+                        <i class="bi bi-info-circle me-1"></i>
+                        About
+                    </a>
+                </li>
+
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+<!-- Page Header -->
+<header class="app-header hero-section">
+
+    <div class="container py-5">
+
+        <div class="row justify-content-center text-center">
+
+            <div class="col-12 col-lg-9">
+
+                <div class="mb-3">
+                    <span class="category-badge">
+                        <i class="bi bi-clock-history me-1"></i>
+                        LATEST NEWS
+                    </span>
+                </div>
+
+                <h1 class="display-5 mb-3">
+                    Latest News
+                </h1>
+
+                <p class="lead mb-0">
+                    Stay updated with the latest published news
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- Latest News -->
+<main class="container py-5">
+
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-4">
+
+        <div>
+            <h2 class="section-heading h3 mb-1">
+                Latest Published News
+            </h2>
+
+            <p class="section-subheading mb-0">
+                Recently published stories from AI-NewsGen Copilot
+            </p>
+        </div>
+
+    </div>
+
+
+    {% if published_news %}
+
+    <div class="news-grid">
+
+        {% for item in published_news %}
+
+        <article class="news-card">
+
+            <a
+                href="{{ url_for('news.news_detail', news_id=item.id) }}"
+                class="news-card-link"
+            >
+
+                <!-- Image -->
+                <div class="news-image-wrapper">
+
+                    {% if item.image_path %}
+
+                    <img
+                        src="{{ url_for('static', filename=item.image_path) }}"
+                        alt="{{ item.final_headline or item.ai_headline or item.title }}"
+                        class="news-image"
+                    >
+
+                    {% else %}
+
+                    <div class="news-image-placeholder">
+                        <i class="bi bi-newspaper"></i>
+                    </div>
+
+                    {% endif %}
+
+                </div>
+
+
+                <!-- Content -->
+                <div class="news-content">
+
+                    <div class="d-flex flex-wrap gap-2 mb-3">
+
+                        {% if item.category %}
+                        <span class="category-badge">
+                            {{ item.category }}
+                        </span>
+                        {% endif %}
+
+                        {% if item.is_breaking %}
+                        <span class="breaking-badge">
+                            <i class="bi bi-lightning-charge-fill"></i>
+                            Breaking
+                        </span>
+                        {% endif %}
+
+                        {% if item.is_featured %}
+                        <span class="featured-badge">
+                            <i class="bi bi-star-fill"></i>
+                            Featured
+                        </span>
+                        {% endif %}
+
+                    </div>
+
+
+                    <!-- Title -->
+                    <h3 class="news-title">
+
+                        {{ item.final_headline
+                           or item.ai_headline
+                           or item.title }}
+
+                    </h3>
+
+
+                    <!-- Summary -->
+                    <p class="news-summary">
+
+                        {{ item.final_summary
+                           or item.ai_summary
+                           or item.additional_description
+                           or "No summary available." }}
+
+                    </p>
+
+
+                    <!-- Meta -->
+                    <div class="mt-auto">
+
+                        {% if item.location %}
+                        <div class="news-location mb-1">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            {{ item.location }}
+                        </div>
+                        {% endif %}
+
+
+                        {% if item.published_at %}
+                        <div class="news-date">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            {{ item.published_at.strftime('%d %b %Y, %I:%M %p') }}
+                        </div>
+                        {% endif %}
+
+                    </div>
+
+                </div>
+
+            </a>
+
+        </article>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <!-- Empty State -->
+    <div class="empty-state">
+
+        <div class="empty-state-icon">
+            <i class="bi bi-newspaper"></i>
+        </div>
+
+        <h3>No Published News</h3>
+
+        <p class="mb-0">
+            There are no published news articles available at the moment.
+        </p>
+
+    </div>
+
+    {% endif %}
+
+</main>
+
+
+<!-- Footer -->
+<footer class="app-footer mt-5">
+
+    <div class="container py-4">
+
+        <div class="row align-items-center gy-3">
+
+            <div class="col-12 col-md-6">
+
+                <p class="app-footer-title mb-1">
+                    <i class="bi bi-newspaper me-1"></i>
+                    AI-NewsGen Copilot
+                </p>
+
+                <p class="app-footer-text mb-0">
+                    AI-Powered Digital Newspaper Platform
+                </p>
+
+            </div>
+
+            <div class="col-12 col-md-6 text-md-end">
+
+                <p class="app-footer-text mb-0">
+                    © 2026 AI-NewsGen Copilot
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap JS -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

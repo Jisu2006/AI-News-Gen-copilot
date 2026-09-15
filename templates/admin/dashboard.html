@@ -12,337 +12,945 @@
 
     <title>Admin Dashboard - AI-NewsGen Copilot</title>
 
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
+    <!-- Bootstrap Icons -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+        rel="stylesheet"
+    >
+
+    <!-- Application CSS -->
+    <link
+        rel="stylesheet"
+        href="{{ url_for('static', filename='css/app.css') }}"
+    >
+
 </head>
 
-<body>
 
-    <!-- ================================================== -->
-    <!-- FLASH MESSAGES -->
-    <!-- ================================================== -->
+<body class="bg-app">
+
+
+<!-- ==================================================
+     NAVBAR
+     ================================================== -->
+
+<nav class="navbar navbar-expand-lg app-navbar sticky-top">
+
+    <div class="container">
+
+        <a
+            class="navbar-brand d-flex align-items-center gap-2"
+            href="{{ url_for('news.homepage') }}"
+        >
+
+            <i class="bi bi-newspaper"></i>
+
+            <span>
+                AI-NewsGen Copilot
+            </span>
+
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#adminNavbar"
+            aria-controls="adminNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+        >
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="adminNavbar"
+        >
+
+            <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('news.homepage') }}"
+                    >
+
+                        <i class="bi bi-house-door me-1"></i>
+
+                        Public Home
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link active"
+                        aria-current="page"
+                        href="{{ url_for('admin.dashboard') }}"
+                    >
+
+                        <i class="bi bi-speedometer2 me-1"></i>
+
+                        Dashboard
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="{{ url_for('auth.logout') }}"
+                    >
+
+                        <i class="bi bi-box-arrow-right me-1"></i>
+
+                        Logout
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- ==================================================
+     HEADER
+     ================================================== -->
+
+<header class="app-header hero-section">
+
+    <div class="container py-4">
+
+        <div class="row align-items-center gy-3">
+
+            <div class="col-12 col-lg-8">
+
+                <div class="mb-2">
+
+                    <span class="category-badge">
+
+                        <i class="bi bi-shield-check me-1"></i>
+
+                        ADMIN PANEL
+
+                    </span>
+
+                </div>
+
+
+                <h1 class="display-6 mb-2">
+                    Admin Dashboard
+                </h1>
+
+
+                <p class="lead mb-0">
+
+                    Welcome,
+                    {{ session.get("user_name") }}!
+
+                </p>
+
+            </div>
+
+
+            <div class="col-12 col-lg-4 text-lg-end">
+
+                <div class="text-white">
+
+                    <i class="bi bi-clipboard-check fs-2"></i>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+<!-- ==================================================
+     MAIN CONTENT
+     ================================================== -->
+
+<main class="container py-4">
+
+
+    <!-- ==================================================
+         FLASH MESSAGES
+         ================================================== -->
 
     {% with messages = get_flashed_messages(with_categories=true) %}
 
         {% if messages %}
 
-            {% for category, message in messages %}
+            <div class="mb-3">
 
-                <p>
-                    {{ message }}
-                </p>
+                {% for category, message in messages %}
 
-            {% endfor %}
+                    {% if category == "success" %}
+
+                        <div
+                            class="alert alert-success py-2 mb-2"
+                            role="alert"
+                        >
+
+                            <i class="bi bi-check-circle-fill me-2"></i>
+
+                            {{ message }}
+
+                        </div>
+
+                    {% else %}
+
+                        <div
+                            class="alert alert-danger py-2 mb-2"
+                            role="alert"
+                        >
+
+                            <i class="bi bi-exclamation-circle-fill me-2"></i>
+
+                            {{ message }}
+
+                        </div>
+
+                    {% endif %}
+
+                {% endfor %}
+
+            </div>
 
         {% endif %}
 
     {% endwith %}
 
 
-    <h1>AI-NewsGen Copilot</h1>
+    <!-- ==================================================
+         PENDING REVIEW
+         ================================================== -->
 
-    <h2>Admin Dashboard</h2>
+    <section class="mb-5">
 
-    <p>
-        Welcome, {{ session.get("user_name") }}!
-    </p>
-
-    <hr>
-
-
-    <!-- ================================================== -->
-    <!-- NEWS PENDING REVIEW -->
-    <!-- ================================================== -->
-
-    <h3>News Pending Review</h3>
-
-    {% if pending_news %}
-
-        {% for news in pending_news %}
+        <div class="d-flex align-items-center justify-content-between mb-3">
 
             <div>
+
+                <h2 class="section-heading h3 mb-1">
+
+                    <i class="bi bi-clock-history me-2"></i>
+
+                    News Pending Review
+
+                </h2>
+
+                <p class="section-subheading mb-0">
+
+                    Review submitted news before making a final decision.
+
+                </p>
+
+            </div>
+
+        </div>
+
+
+        {% if pending_news %}
+
+            <div class="row g-3">
+
+                {% for news in pending_news %}
+
+                    <div class="col-12">
+
+                        <article class="dashboard-card p-3 p-md-4">
+
+                            <div class="row align-items-center gy-3">
+
+
+                                <!-- News Information -->
+
+                                <div class="col-12 col-lg-8">
+
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                        {% if news.category %}
+
+                                            <span class="category-badge">
+
+                                                <i class="bi bi-tag me-1"></i>
+
+                                                {{ news.category }}
+
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        <span class="status-badge status-review">
+
+                                            Pending Review
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <h3 class="dashboard-card-title h5 mb-2">
+
+                                        {{ news.title }}
+
+                                    </h3>
+
+
+                                    <div class="row g-2">
+
+                                        <div class="col-12 col-md-6">
+
+                                            <span class="news-meta">
+
+                                                <i class="bi bi-geo-alt me-1"></i>
+
+                                                <strong>Location:</strong>
+
+                                                {{ news.location or "Not provided" }}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="col-12 col-md-6">
+
+                                            <span class="news-meta">
+
+                                                <i class="bi bi-calendar3 me-1"></i>
+
+                                                <strong>Submitted:</strong>
+
+                                                {{ news.created_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Actions -->
+
+                                <div class="col-12 col-lg-4">
+
+                                    <div
+                                        class="d-flex flex-column flex-sm-row flex-lg-column gap-2"
+                                    >
+
+                                        <a
+                                            href="{{ url_for(
+                                                'admin.review_news',
+                                                news_id=news.id
+                                            ) }}"
+                                            class="btn primary-btn"
+                                        >
+
+                                            <i class="bi bi-eye me-1"></i>
+
+                                            Review News
+
+                                        </a>
+
+
+                                        <a
+                                            href="{{ url_for(
+                                                'admin.edit_news',
+                                                news_id=news.id
+                                            ) }}"
+                                            class="btn secondary-btn"
+                                        >
+
+                                            <i class="bi bi-pencil me-1"></i>
+
+                                            Edit News
+
+                                        </a>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state py-4">
+
+                <div class="empty-state-icon">
+
+                    <i class="bi bi-check2-circle"></i>
+
+                </div>
 
                 <h3>
-                    {{ news.title }}
+                    No News Pending Review
                 </h3>
 
-                <p>
-                    <strong>Category:</strong>
-                    {{ news.category }}
-                </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    {{ news.location or "Not provided" }}
-                </p>
-
-                <p>
-                    <strong>Status:</strong>
-                    {{ news.status }}
-                </p>
-
-                <p>
-                    <strong>Submitted:</strong>
-                    {{ news.created_at }}
-                </p>
-
-
-                <!-- Review News -->
-
-                <p>
-
-                    <a
-                        href="{{ url_for('admin.review_news', news_id=news.id) }}"
-                    >
-                        Review News
-                    </a>
-
-                </p>
-
-
-                <!-- Edit News -->
-
-                <p>
-
-                    <a
-                        href="{{ url_for('admin.edit_news', news_id=news.id) }}"
-                    >
-                        ✏️ Edit News
-                    </a>
-
+                <p class="mb-0">
+                    No news is currently waiting for administrator review.
                 </p>
 
             </div>
 
-            <hr>
+        {% endif %}
 
-        {% endfor %}
-
-    {% else %}
-
-        <p>
-            No news is currently waiting for review.
-        </p>
-
-    {% endif %}
+    </section>
 
 
-    <hr>
+    <!-- ==================================================
+         APPROVED NEWS
+         ================================================== -->
+
+    <section class="mb-5">
+
+        <div class="mb-3">
+
+            <h2 class="section-heading h3 mb-1">
+
+                <i class="bi bi-check-circle me-2"></i>
+
+                Approved News
+
+            </h2>
+
+            <p class="section-subheading mb-0">
+
+                Approved news waiting to be published.
+
+            </p>
+
+        </div>
 
 
-    <!-- ================================================== -->
-    <!-- APPROVED NEWS -->
-    <!-- ================================================== -->
+        {% if approved_news %}
 
-    <h3>Approved News</h3>
+            <div class="row g-3">
 
-    {% if approved_news %}
+                {% for news in approved_news %}
 
-        {% for news in approved_news %}
+                    <div class="col-12">
 
-            <div>
+                        <article class="dashboard-card p-3 p-md-4">
+
+                            <div class="row align-items-center gy-3">
+
+
+                                <!-- Information -->
+
+                                <div class="col-12 col-lg-8">
+
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                        {% if news.category %}
+
+                                            <span class="category-badge">
+
+                                                <i class="bi bi-tag me-1"></i>
+
+                                                {{ news.category }}
+
+                                            </span>
+
+                                        {% endif %}
+
+
+                                        <span class="status-badge status-approved">
+
+                                            Approved
+
+                                        </span>
+
+                                    </div>
+
+
+                                    <h3 class="dashboard-card-title h5 mb-2">
+
+                                        {{ news.title }}
+
+                                    </h3>
+
+
+                                    <div class="row g-2">
+
+                                        <div class="col-12 col-md-6">
+
+                                            <span class="news-meta">
+
+                                                <i class="bi bi-geo-alt me-1"></i>
+
+                                                <strong>Location:</strong>
+
+                                                {{ news.location or "Not provided" }}
+
+                                            </span>
+
+                                        </div>
+
+
+                                        <div class="col-12 col-md-6">
+
+                                            <span class="news-meta">
+
+                                                <i class="bi bi-calendar3 me-1"></i>
+
+                                                <strong>Updated:</strong>
+
+                                                {{ news.updated_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                                            </span>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+
+                                <!-- Actions -->
+
+                                <div class="col-12 col-lg-4">
+
+                                    <div
+                                        class="d-flex flex-column flex-sm-row flex-lg-column gap-2"
+                                    >
+
+                                        <a
+                                            href="{{ url_for(
+                                                'admin.edit_news',
+                                                news_id=news.id
+                                            ) }}"
+                                            class="btn secondary-btn"
+                                        >
+
+                                            <i class="bi bi-pencil me-1"></i>
+
+                                            Edit News
+
+                                        </a>
+
+
+                                        <form
+                                            method="POST"
+                                            action="{{ url_for(
+                                                'admin.publish_news',
+                                                news_id=news.id
+                                            ) }}"
+                                        >
+
+                                            <input
+                                                type="hidden"
+                                                name="csrf_token"
+                                                value="{{ csrf_token() }}"
+                                            >
+
+
+                                            <button
+                                                type="submit"
+                                                class="btn primary-btn w-100"
+                                            >
+
+                                                <i class="bi bi-globe2 me-1"></i>
+
+                                                Publish News
+
+                                            </button>
+
+                                        </form>
+
+                                    </div>
+
+                                </div>
+
+                            </div>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state py-4">
+
+                <div class="empty-state-icon">
+
+                    <i class="bi bi-inbox"></i>
+
+                </div>
 
                 <h3>
-                    {{ news.title }}
+                    No Approved News
                 </h3>
 
-                <p>
-                    <strong>Category:</strong>
-                    {{ news.category }}
+                <p class="mb-0">
+                    No approved news is currently waiting for publication.
                 </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    {{ news.location or "Not provided" }}
-                </p>
-
-                <p>
-                    <strong>Status:</strong>
-                    {{ news.status }}
-                </p>
-
-                <p>
-                    <strong>Approved/Updated:</strong>
-                    {{ news.updated_at }}
-                </p>
-
-
-                <!-- Edit News -->
-
-                <p>
-
-                    <a
-                        href="{{ url_for('admin.edit_news', news_id=news.id) }}"
-                    >
-                        ✏️ Edit News
-                    </a>
-
-                </p>
-
-
-                <!-- Publish Button -->
-
-                <form
-                    method="POST"
-                    action="{{ url_for('admin.publish_news', news_id=news.id) }}"
-                >
-
-                    <!-- CSRF Protection -->
-
-                    <input
-                        type="hidden"
-                        name="csrf_token"
-                        value="{{ csrf_token() }}"
-                    >
-
-
-                    <button type="submit">
-                        Publish News
-                    </button>
-
-                </form>
 
             </div>
 
-            <hr>
+        {% endif %}
 
-        {% endfor %}
-
-    {% else %}
-
-        <p>
-            No approved news is currently waiting for publication.
-        </p>
-
-    {% endif %}
+    </section>
 
 
-    <hr>
+    <!-- ==================================================
+         PUBLISHED NEWS
+         ================================================== -->
+
+    <section class="mb-5">
+
+        <div class="mb-3">
+
+            <h2 class="section-heading h3 mb-1">
+
+                <i class="bi bi-globe2 me-2"></i>
+
+                Published News
+
+            </h2>
+
+            <p class="section-subheading mb-0">
+
+                News currently available on the public newspaper.
+
+            </p>
+
+        </div>
 
 
-    <!-- ================================================== -->
-    <!-- PUBLISHED NEWS -->
-    <!-- ================================================== -->
+        {% if published_news %}
 
-    <h3>Published News</h3>
+            <div class="row g-3">
 
-    {% if published_news %}
+                {% for news in published_news %}
 
-        {% for news in published_news %}
+                    <div class="col-12 col-md-6">
 
-            <div>
+                        <article class="dashboard-card p-3 h-100">
+
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+
+                                {% if news.category %}
+
+                                    <span class="category-badge">
+
+                                        {{ news.category }}
+
+                                    </span>
+
+                                {% endif %}
+
+
+                                <span class="status-badge status-published">
+
+                                    Published
+
+                                </span>
+
+                            </div>
+
+
+                            <h3 class="dashboard-card-title h5 mb-2">
+
+                                {{ news.title }}
+
+                            </h3>
+
+
+                            <p class="news-meta mb-1">
+
+                                <i class="bi bi-geo-alt me-1"></i>
+
+                                {{ news.location or "Not provided" }}
+
+                            </p>
+
+
+                            <p class="news-meta mb-0">
+
+                                <i class="bi bi-calendar3 me-1"></i>
+
+                                {{ news.published_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                            </p>
+
+                        </article>
+
+                    </div>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state py-4">
+
+                <div class="empty-state-icon">
+
+                    <i class="bi bi-newspaper"></i>
+
+                </div>
 
                 <h3>
-                    {{ news.title }}
+                    No Published News
                 </h3>
 
-                <p>
-                    <strong>Category:</strong>
-                    {{ news.category }}
-                </p>
-
-                <p>
-                    <strong>Location:</strong>
-                    {{ news.location or "Not provided" }}
-                </p>
-
-                <p>
-                    <strong>Status:</strong>
-                    {{ news.status }}
-                </p>
-
-                <p>
-                    <strong>Published At:</strong>
-                    {{ news.published_at }}
+                <p class="mb-0">
+                    No news has been published yet.
                 </p>
 
             </div>
 
-            <hr>
+        {% endif %}
 
-        {% endfor %}
-
-    {% else %}
-
-        <p>
-            No news has been published yet.
-        </p>
-
-    {% endif %}
+    </section>
 
 
-    <hr>
+    <!-- ==================================================
+         ADMIN AUDIT HISTORY
+         ================================================== -->
+
+    <section class="mb-4">
+
+        <div class="mb-3">
+
+            <h2 class="section-heading h3 mb-1">
+
+                <i class="bi bi-clock-history me-2"></i>
+
+                Admin Audit History
+
+            </h2>
+
+            <p class="section-subheading mb-0">
+
+                Record of administrative actions performed on news.
+
+            </p>
+
+        </div>
 
 
-    <!-- ================================================== -->
-    <!-- ADMIN AUDIT HISTORY -->
-    <!-- ================================================== -->
+        {% if admin_actions %}
 
-    <h3>Admin Audit History</h3>
+            <div class="dashboard-card overflow-hidden">
 
-    {% if admin_actions %}
+                <div class="table-responsive">
 
-        {% for action in admin_actions %}
+                    <table class="table table-hover align-middle mb-0">
 
-            <div>
+                        <thead>
 
-                <p>
-                    <strong>News ID:</strong>
-                    {{ action.news_id }}
-                </p>
+                            <tr>
 
-                <p>
-                    <strong>Action:</strong>
-                    {{ action.action }}
-                </p>
+                                <th>
+                                    News ID
+                                </th>
 
-                <p>
-                    <strong>Admin:</strong>
-                    {{ action.admin.name }}
-                </p>
+                                <th>
+                                    Action
+                                </th>
 
-                {% if action.comment %}
+                                <th>
+                                    Admin
+                                </th>
 
-                    <p>
-                        <strong>Comment:</strong>
-                        {{ action.comment }}
-                    </p>
+                                <th>
+                                    Comment
+                                </th>
 
-                {% endif %}
+                                <th>
+                                    Date & Time
+                                </th>
 
-                <p>
-                    <strong>Date & Time:</strong>
-                    {{ action.created_at }}
+                            </tr>
+
+                        </thead>
+
+
+                        <tbody>
+
+                            {% for action in admin_actions %}
+
+                                <tr>
+
+                                    <td>
+                                        #{{ action.news_id }}
+                                    </td>
+
+
+                                    <td>
+
+                                        <span class="status-badge status-review">
+
+                                            {{ action.action }}
+
+                                        </span>
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ action.admin.name }}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {% if action.comment %}
+
+                                            {{ action.comment }}
+
+                                        {% else %}
+
+                                            <span class="text-muted-app">
+                                                —
+                                            </span>
+
+                                        {% endif %}
+
+                                    </td>
+
+
+                                    <td>
+
+                                        {{ action.created_at.strftime('%d %b %Y, %I:%M %p') }}
+
+                                    </td>
+
+                                </tr>
+
+                            {% endfor %}
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        {% else %}
+
+            <div class="empty-state py-4">
+
+                <div class="empty-state-icon">
+
+                    <i class="bi bi-clock-history"></i>
+
+                </div>
+
+                <h3>
+                    No Admin Actions
+                </h3>
+
+                <p class="mb-0">
+                    No administrative actions have been recorded yet.
                 </p>
 
             </div>
 
-            <hr>
+        {% endif %}
 
-        {% endfor %}
-
-    {% else %}
-
-        <p>
-            No admin actions have been recorded yet.
-        </p>
-
-    {% endif %}
+    </section>
 
 
-    <hr>
+</main>
 
 
-    <!-- ================================================== -->
-    <!-- LOGOUT -->
-    <!-- ================================================== -->
+<!-- ==================================================
+     FOOTER
+     ================================================== -->
 
-    <p>
+<footer class="app-footer mt-4">
 
-        <a href="{{ url_for('auth.logout') }}">
-            Logout
-        </a>
+    <div class="container py-3">
 
-    </p>
+        <div class="row align-items-center gy-2">
 
+            <div class="col-12 col-md-6">
+
+                <p class="app-footer-title mb-0">
+
+                    <i class="bi bi-shield-check me-1"></i>
+
+                    AI-NewsGen Copilot — Admin
+
+                </p>
+
+            </div>
+
+
+            <div class="col-12 col-md-6 text-md-end">
+
+                <p class="app-footer-text mb-0">
+
+                    © 2026 AI-NewsGen Copilot
+
+                </p>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap JS -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+></script>
 
 </body>
 

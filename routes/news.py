@@ -221,6 +221,22 @@ def breaking_news_page():
         breaking_news=breaking_news
     )
 
+# ==================================================
+# LATEST NEWS PAGE
+# ==================================================
+
+@news.route("/latest-news")
+def latest_news_page():
+    published_news = News.query.filter(
+        News.status == "PUBLISHED"
+    ).order_by(
+        News.published_at.desc()
+    ).all()
+
+    return render_template(
+        "news/latest_news.html",
+        published_news=published_news
+    )
 
 # ==================================================
 # FEATURED NEWS PAGE
