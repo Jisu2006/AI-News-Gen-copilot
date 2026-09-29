@@ -1,3 +1,9 @@
+import json
+import os
+import uuid
+from datetime import datetime
+from pathlib import Path
+
 from flask import (
     Blueprint,
     render_template,
@@ -7,35 +13,20 @@ from flask import (
     session,
     flash
 )
+from werkzeug.utils import secure_filename
 
+from config import Config
 from database.db import db
 from models.database_models import News
 from llm.news_generator import generate_news_draft
 
-from datetime import datetime
-from pathlib import Path
-from werkzeug.utils import secure_filename
-
-import json
-import uuid
-
-
-# ==================================================
-# USER BLUEPRINT
-# ==================================================
-
-user = Blueprint(
-    "user",
-    __name__,
-    url_prefix="/user"
-)
-
+user = Blueprint("user", __name__, url_prefix="/user")
 
 # ==================================================
 # UPLOAD CONFIGURATION
 # ==================================================
 
-UPLOAD_FOLDER = Path("static/uploads")
+UPLOAD_FOLDER = Path(Config.UPLOAD_FOLDER)
 
 ALLOWED_IMAGE_EXTENSIONS = {
     "jpg",
@@ -52,79 +43,45 @@ ALLOWED_VIDEO_EXTENSIONS = {
     "webm"
 }
 
-
-# Maximum individual file sizes
 MAX_IMAGE_SIZE = 10 * 1024 * 1024       # 10 MB
 MAX_VIDEO_SIZE = 100 * 1024 * 1024      # 100 MB
 
 
 # ==================================================
-# FILE VALIDATION
+# FILE VALIDATION HELPERS
 # ==================================================
 
-def allowed_file(filename, allowed_extensions):
-
+def allowed_file(filename: str, allowed_extensions: set) -> bool:
     return (
         "." in filename
-        and filename.rsplit(".", 1)[1].lower()
-        in allowed_extensions
+        and filename.rsplit(".", 1)[1].lower() in allowed_extensions
     )
 
 
-def get_file_size(file):
-
-    """
-    Return uploaded file size in bytes
-    without permanently changing the stream position.
-    """
-
+def get_file_size(file_storage) -> int:
+    """Return uploaded file size in bytes without losing stream position."""
     try:
-
-        current_position = file.stream.tell()
-
-        file.stream.seek(0, 2)
-
-        file_size = file.stream.tell()
-
-        file.stream.seek(current_position)
-
+        current_position = file_storage.stream.tell()
+        file_storage.stream.seek(0, 2)
+        file_size = file_storage.stream.tell()
+        file_storage.stream.seek(current_position)
         return file_size
-
     except Exception:
-
         return 0
 
 
-def generate_unique_filename(filename):
-
-    """
-    Create a secure and unique filename.
-
-    Example:
-    photo.jpg
-    ->
-    8f9c2a7b3e1d4f6a_photo.jpg
-    """
-
+def generate_unique_filename(filename: str) -> str | None:
+    """Generate a sanitized, collision-resistant unique filename."""
     safe_filename = secure_filename(filename)
-
     if not safe_filename:
-
         return None
-
     unique_id = uuid.uuid4().hex
-
     return f"{unique_id}_{safe_filename}"
 
 
-# ==================================================
-# DETECT REQUIRED INFORMATION FROM ADMIN COMMENT
-# ==================================================
-
-def get_requested_fields(admin_comment):
-
+def get_requested_fields(admin_comment: str | None) -> dict[str, bool]:
+    """Parse admin review comments to detect required update fields."""
     comment = (admin_comment or "").lower()
-
     requested_fields = {
         "additional_information": False,
         "url": False,
@@ -132,75 +89,29 @@ def get_requested_fields(admin_comment):
         "video": False
     }
 
-
-    # ----------------------------------------------
-    # URL / LINK
-    # ----------------------------------------------
-
-    url_keywords = [
-        "url",
-        "link",
-        "website",
-        "source"
-    ]
-
+    url_keywords = ["url", "link", "website", "source"]
     if any(keyword in comment for keyword in url_keywords):
-
         requested_fields["url"] = True
 
-
-    # ----------------------------------------------
-    # PHOTO / IMAGE
-    # ----------------------------------------------
-
-    image_keywords = [
-        "photo",
-        "image",
-        "picture",
-        "pic"
-    ]
-
+    image_keywords = ["photo", "image", "picture", "pic"]
     if any(keyword in comment for keyword in image_keywords):
-
         requested_fields["image"] = True
 
-
-    # ----------------------------------------------
-    # VIDEO
-    # ----------------------------------------------
-
-    video_keywords = [
-        "video",
-        "recording",
-        "footage"
-    ]
-
+    video_keywords = ["video", "recording", "footage", "clip"]
     if any(keyword in comment for keyword in video_keywords):
-
         requested_fields["video"] = True
 
-
-    # ----------------------------------------------
-    # ADDITIONAL INFORMATION
-    # ----------------------------------------------
-
-    information_keywords = [
-        "information",
-        "details",
-        "detail",
-        "proof",
-        "evidence",
-        "explain",
-        "explanation"
+    info_keywords = [
+        "information", "details", "detail", "proof",
+        "evidence", "explain", "explanation", "more info",
+        "clarify", "clarification"
     ]
-
-    if any(
-        keyword in comment
-        for keyword in information_keywords
-    ):
-
+    if any(keyword in comment for keyword in info_keywords):
         requested_fields["additional_information"] = True
 
+    # Default to requiring additional information if no specific keyword matched
+    if not any(requested_fields.values()):
+        requested_fields["additional_information"] = True
 
     return requested_fields
 
@@ -211,42 +122,40 @@ def get_requested_fields(admin_comment):
 
 @user.route("/dashboard")
 def dashboard():
+    if "user_id" not in session:
+        return redirect(url_for("auth.user_login", next=request.path))
 
-    # Only normal users can access user dashboard
-    if (
-        "user_id" not in session
-        or session.get("user_role") != "user"
-    ):
-        return redirect(
-            url_for("auth.user_login")
-        )
+    if session.get("user_role") != "user":
+        flash("Administrators have access to the Admin Dashboard.", "error")
+        return redirect(url_for("admin.dashboard"))
+
+    user_id = session["user_id"]
+    total_submissions = News.query.filter_by(user_id=user_id).count()
+    published_count = News.query.filter_by(user_id=user_id, status="PUBLISHED").count()
+    pending_count = News.query.filter_by(user_id=user_id, status="PENDING_REVIEW").count()
+    needs_info_count = News.query.filter_by(user_id=user_id, status="NEEDS_INFORMATION").count()
 
     return render_template(
         "user_dashboard.html",
-        user_name=session.get("user_name")
+        user_name=session.get("user_name"),
+        total_submissions=total_submissions,
+        published_count=published_count,
+        pending_count=pending_count,
+        needs_info_count=needs_info_count
     )
+
+
 # ==================================================
 # MY NEWS
 # ==================================================
 
 @user.route("/my-news")
 def my_news():
+    if "user_id" not in session:
+        return redirect(url_for("auth.user_login", next=request.path))
 
-    # ----------------------------------------------
-    # User Authentication
-    # ----------------------------------------------
-
-    if (
-        "user_id" not in session
-        or session.get("user_role") != "user"
-    ):
-        return redirect(
-            url_for("auth.user_login")
-        )
-
-    # ----------------------------------------------
-    # Get Current User's News
-    # ----------------------------------------------
+    if session.get("user_role") != "user":
+        return redirect(url_for("admin.dashboard"))
 
     user_news = (
         News.query
@@ -255,932 +164,308 @@ def my_news():
         .all()
     )
 
-    # ----------------------------------------------
-    # Render My News Page
-    # ----------------------------------------------
+    return render_template("my_news.html", news_list=user_news)
 
-    return render_template(
-        "my_news.html",
-        news_list=user_news
-    )
 
 # ==================================================
 # SUBMIT NEWS
 # ==================================================
 
-@user.route(
-    "/submit-news",
-    methods=["GET", "POST"]
-)
+@user.route("/submit-news", methods=["GET", "POST"])
 def submit_news():
+    if "user_id" not in session:
+        return redirect(url_for("auth.user_login", next=request.path))
 
-    if (
-        "user_id" not in session
-        or session.get("user_role") != "user"
-    ):
-        return redirect(
-            url_for("auth.user_login")
-        )
-
+    if session.get("user_role") != "user":
+        flash("Administrators manage news from the Admin Dashboard.", "error")
+        return redirect(url_for("admin.dashboard"))
 
     if request.method == "POST":
+        category = request.form.get("category", "").strip()
+        title = request.form.get("title", "").strip()
+        location = request.form.get("location", "").strip()
+        incident_date = request.form.get("incident_date", "").strip()
+        incident_time = request.form.get("incident_time", "").strip()
+        bullet_points = request.form.get("bullet_points", "").strip()
+        additional_description = request.form.get("additional_description", "").strip()
+        source_url = request.form.get("source_url", "").strip()
+        supporting_information = request.form.get("supporting_information", "").strip()
+        action = request.form.get("action", "draft")
 
-        # ----------------------------------------------
-        # GET FORM DATA
-        # ----------------------------------------------
-
-        category = request.form.get(
-            "category",
-            ""
-        ).strip()
-
-        title = request.form.get(
-            "title",
-            ""
-        ).strip()
-
-        location = request.form.get(
-            "location",
-            ""
-        ).strip()
-
-        incident_date = request.form.get(
-            "incident_date",
-            ""
-        ).strip()
-
-        incident_time = request.form.get(
-            "incident_time",
-            ""
-        ).strip()
-
-        bullet_points = request.form.get(
-            "bullet_points",
-            ""
-        ).strip()
-
-        additional_description = request.form.get(
-            "additional_description",
-            ""
-        ).strip()
-
-        source_url = request.form.get(
-            "source_url",
-            ""
-        ).strip()
-
-        supporting_information = request.form.get(
-            "supporting_information",
-            ""
-        ).strip()
-
-        action = request.form.get(
-            "action",
-            "draft"
-        )
-
-
-        # ==================================================
-        # REQUIRED FIELD VALIDATION
-        # ==================================================
-
+        # Required validation
         if not category or not title or not bullet_points:
+            flash("Category, title and bullet points are required.", "error")
+            return redirect(url_for("user.submit_news"))
 
-            flash(
-                "Category, title and bullet points are required.",
-                "error"
-            )
+        if len(title) > 255:
+            flash("Title must be 255 characters or fewer.", "error")
+            return redirect(url_for("user.submit_news"))
 
-            return redirect(
-                url_for("user.submit_news")
-            )
-
-
-        # ==================================================
-        # DATE CONVERSION
-        # ==================================================
-
+        # Date conversion
         parsed_date = None
-
         if incident_date:
-
             try:
-
-                parsed_date = datetime.strptime(
-                    incident_date,
-                    "%Y-%m-%d"
-                ).date()
-
+                parsed_date = datetime.strptime(incident_date, "%Y-%m-%d").date()
             except ValueError:
+                flash("Invalid incident date format. Please use YYYY-MM-DD.", "error")
+                return redirect(url_for("user.submit_news"))
 
-                flash(
-                    "Invalid date format.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-        # ==================================================
-        # TIME CONVERSION
-        # ==================================================
-
+        # Time conversion
         parsed_time = None
-
         if incident_time:
+            for time_fmt in ("%H:%M", "%H:%M:%S"):
+                try:
+                    parsed_time = datetime.strptime(incident_time, time_fmt).time()
+                    break
+                except ValueError:
+                    continue
+            if not parsed_time:
+                flash("Invalid incident time format. Please use HH:MM.", "error")
+                return redirect(url_for("user.submit_news"))
 
-            try:
-
-                parsed_time = datetime.strptime(
-                    incident_time,
-                    "%H:%M"
-                ).time()
-
-            except ValueError:
-
-                flash(
-                    "Invalid time format.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-        # ==================================================
-        # UPLOAD FOLDER
-        # ==================================================
-
-        UPLOAD_FOLDER.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-
+        # Create upload folder
+        UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
         image_path = None
         video_path = None
 
-
-        # ==================================================
-        # IMAGE UPLOAD
-        # ==================================================
-
+        # Image upload
         image = request.files.get("image")
-
         if image and image.filename:
+            if not allowed_file(image.filename, ALLOWED_IMAGE_EXTENSIONS):
+                flash("Invalid image file type. Allowed formats: JPG, JPEG, PNG, GIF, WEBP.", "error")
+                return redirect(url_for("user.submit_news"))
 
-            # Validate extension
+            if get_file_size(image) > MAX_IMAGE_SIZE:
+                flash("Image file exceeds maximum allowed size of 10 MB.", "error")
+                return redirect(url_for("user.submit_news"))
 
-            if not allowed_file(
-                image.filename,
-                ALLOWED_IMAGE_EXTENSIONS
-            ):
-
-                flash(
-                    "Invalid image file type.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-            # Validate file size
-
-            image_size = get_file_size(image)
-
-            if image_size > MAX_IMAGE_SIZE:
-
-                flash(
-                    "Image file is too large. "
-                    "Maximum allowed size is 10 MB.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-            # Generate secure unique filename
-
-            filename = generate_unique_filename(
-                image.filename
-            )
-
+            filename = generate_unique_filename(image.filename)
             if not filename:
-
-                flash(
-                    "Invalid image filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
+                flash("Invalid image filename.", "error")
+                return redirect(url_for("user.submit_news"))
 
             image_path = f"uploads/{filename}"
+            image.save(UPLOAD_FOLDER / filename)
 
-
-            image.save(
-                UPLOAD_FOLDER / filename
-            )
-
-
-        # ==================================================
-        # VIDEO UPLOAD
-        # ==================================================
-
+        # Video upload
         video = request.files.get("video")
-
         if video and video.filename:
+            if not allowed_file(video.filename, ALLOWED_VIDEO_EXTENSIONS):
+                flash("Invalid video file type. Allowed formats: MP4, MOV, AVI, WEBM.", "error")
+                return redirect(url_for("user.submit_news"))
 
-            # Validate extension
+            if get_file_size(video) > MAX_VIDEO_SIZE:
+                flash("Video file exceeds maximum allowed size of 100 MB.", "error")
+                return redirect(url_for("user.submit_news"))
 
-            if not allowed_file(
-                video.filename,
-                ALLOWED_VIDEO_EXTENSIONS
-            ):
-
-                flash(
-                    "Invalid video file type.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-            # Validate file size
-
-            video_size = get_file_size(video)
-
-            if video_size > MAX_VIDEO_SIZE:
-
-                flash(
-                    "Video file is too large. "
-                    "Maximum allowed size is 100 MB.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
-
-            # Generate secure unique filename
-
-            filename = generate_unique_filename(
-                video.filename
-            )
-
+            filename = generate_unique_filename(video.filename)
             if not filename:
-
-                flash(
-                    "Invalid video filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for("user.submit_news")
-                )
-
+                flash("Invalid video filename.", "error")
+                return redirect(url_for("user.submit_news"))
 
             video_path = f"uploads/{filename}"
+            video.save(UPLOAD_FOLDER / filename)
 
+        # Determine initial status
+        status = "AI_PROCESSING" if action == "submit" else "DRAFT"
 
-            video.save(
-                UPLOAD_FOLDER / filename
-            )
-
-
-        # ==================================================
-        # DETERMINE STATUS
-        # ==================================================
-
-        if action == "submit":
-
-            status = "AI_PROCESSING"
-
-        else:
-
-            status = "DRAFT"
-
-
-        # ==================================================
-        # CREATE NEWS
-        # ==================================================
-
-        news = News(
-
+        news_record = News(
             user_id=session["user_id"],
-
             category=category,
-
             title=title,
-
             location=location,
-
             incident_date=parsed_date,
-
             incident_time=parsed_time,
-
             bullet_points=bullet_points,
-
             additional_description=additional_description,
-
             image_path=image_path,
-
             video_path=video_path,
-
             source_url=source_url,
-
             supporting_information=supporting_information,
-
             status=status
         )
 
-
-        db.session.add(news)
-
+        db.session.add(news_record)
         db.session.commit()
 
-
-        # ==================================================
-        # SAVE AS DRAFT
-        # ==================================================
-
         if action != "submit":
+            flash("News saved as draft successfully.", "success")
+            return redirect(url_for("user.my_news"))
 
-            flash(
-                "News saved as draft successfully.",
-                "success"
-            )
-
-            return redirect(
-                url_for("user.my_news")
-            )
-
-
-        # ==================================================
-        # AI NEWS GENERATION
-        # ==================================================
-
+        # AI News Generation
         try:
+            ai_result = generate_news_draft(news_record)
 
-            print("\n======================================")
-            print("AI NEWS GENERATION STARTED")
-            print("News ID:", news.id)
-            print("======================================\n")
+            news_record.ai_headline = ai_result.get("headline")
+            news_record.ai_subheading = ai_result.get("subheading")
+            news_record.ai_summary = ai_result.get("summary")
+            news_record.ai_article = ai_result.get("article")
 
+            key_facts = ai_result.get("key_facts", [])
+            news_record.key_facts = json.dumps(key_facts, ensure_ascii=False) if isinstance(key_facts, list) else str(key_facts)
 
-            ai_result = generate_news_draft(news)
+            tags = ai_result.get("tags", [])
+            news_record.tags = json.dumps(tags, ensure_ascii=False) if isinstance(tags, list) else str(tags)
 
-
-            news.ai_headline = ai_result["headline"]
-
-            news.ai_subheading = ai_result["subheading"]
-
-            news.ai_summary = ai_result["summary"]
-
-            news.ai_article = ai_result["article"]
-
-
-            news.key_facts = json.dumps(
-                ai_result["key_facts"],
-                ensure_ascii=False
-            )
-
-
-            news.tags = json.dumps(
-                ai_result["tags"],
-                ensure_ascii=False
-            )
-
-
-            news.status = "PENDING_REVIEW"
-
-
+            news_record.status = "PENDING_REVIEW"
             db.session.commit()
 
-
-            print("\n======================================")
-            print("AI NEWS GENERATION SUCCESSFUL")
-            print("News ID:", news.id)
-            print("Status:", news.status)
-            print("======================================\n")
-
-
-            flash(
-                "News submitted successfully and AI draft generated. "
-                "It is now waiting for admin review.",
-                "success"
-            )
-
-
+            flash("News submitted successfully and AI draft generated. Waiting for admin review.", "success")
         except Exception as error:
-
-            print("\n======================================")
-            print("AI NEWS GENERATION FAILED")
-            print("News ID:", news.id)
-            print("Error:", error)
-            print("======================================\n")
-
-
-            news.status = "AI_PROCESSING_FAILED"
-
+            print(f"[AI GENERATION ERROR] News ID {news_record.id}: {error}")
+            news_record.status = "AI_PROCESSING_FAILED"
             db.session.commit()
+            flash("News was saved, but AI draft generation encountered an issue. You can retry from My News.", "error")
+
+        return redirect(url_for("user.my_news"))
+
+    return render_template("submit_news.html")
 
 
-            flash(
-                "News was submitted, but AI processing failed. "
-                "Please try again later.",
-                "error"
-            )
+# ==================================================
+# VIEW SUBMISSION STATUS
+# ==================================================
 
+@user.route("/news/<int:news_id>")
+def view_news_status(news_id):
+    if "user_id" not in session:
+        return redirect(url_for("auth.user_login", next=request.path))
 
-        return redirect(
-            url_for("user.my_news")
-        )
+    if session.get("user_role") != "user":
+        return redirect(url_for("admin.dashboard"))
 
+    news_record = db.get_or_404(News, news_id)
+    if news_record.user_id != session["user_id"]:
+        flash("You are not authorized to view this submission.", "error")
+        return redirect(url_for("user.my_news"))
 
-    return render_template(
-        "submit_news.html"
-    )
+    return redirect(url_for("user.my_news"))
 
 
 # ==================================================
 # PROVIDE ADDITIONAL INFORMATION
 # ==================================================
 
-@user.route(
-    "/provide-information/<int:news_id>",
-    methods=["GET", "POST"]
-)
+@user.route("/news/<int:news_id>/provide-info", methods=["GET", "POST"])
+@user.route("/provide-information/<int:news_id>", methods=["GET", "POST"])
 def provide_information(news_id):
+    if "user_id" not in session:
+        return redirect(url_for("auth.user_login", next=request.path))
 
-    # ----------------------------------------------
-    # User Authentication + Role Check
-    # ----------------------------------------------
+    if session.get("user_role") != "user":
+        return redirect(url_for("admin.dashboard"))
 
-    if (
-        "user_id" not in session
-        or session.get("user_role") != "user"
-    ):
-        return redirect(
-            url_for("auth.user_login")
-        )
+    news_record = db.get_or_404(News, news_id)
 
+    if news_record.user_id != session["user_id"]:
+        flash("You are not authorized to update this news submission.", "error")
+        return redirect(url_for("user.my_news"))
 
-    # ----------------------------------------------
-    # Get News
-    # ----------------------------------------------
+    if news_record.status != "NEEDS_INFORMATION":
+        flash("Additional information is not currently requested for this news.", "error")
+        return redirect(url_for("user.my_news"))
 
-    news = News.query.get_or_404(news_id)
-
-
-    # ----------------------------------------------
-    # Owner Check
-    # ----------------------------------------------
-
-    if news.user_id != session["user_id"]:
-
-        flash(
-            "You are not authorized to update this news.",
-            "error"
-        )
-
-        return redirect(
-            url_for("user.my_news")
-        )
-
-
-    # ----------------------------------------------
-    # Status Check
-    # ----------------------------------------------
-
-    if news.status != "NEEDS_INFORMATION":
-
-        flash(
-            "Additional information is not currently requested "
-            "for this news.",
-            "error"
-        )
-
-        return redirect(
-            url_for("user.my_news")
-        )
-
-
-    # ----------------------------------------------
-    # Detect Required Sections
-    # ----------------------------------------------
-
-    requested_fields = get_requested_fields(
-        news.admin_comment
-    )
-
-
-    # ==================================================
-    # POST REQUEST
-    # ==================================================
+    requested_fields = get_requested_fields(news_record.admin_comment)
 
     if request.method == "POST":
+        additional_info = request.form.get("additional_information", "").strip()
+        new_source_url = request.form.get("source_url", "").strip()
 
-        # ----------------------------------------------
-        # Additional Information
-        # ----------------------------------------------
+        # Validation based on requested fields
+        if requested_fields["additional_information"] and not additional_info:
+            flash("Please provide the requested additional information.", "error")
+            return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-        additional_information = request.form.get(
-            "additional_information",
-            ""
-        ).strip()
+        if requested_fields["url"] and not new_source_url:
+            flash("Please provide the requested source URL.", "error")
+            return redirect(url_for("user.provide_information", news_id=news_record.id))
 
+        UPLOAD_FOLDER.mkdir(parents=True, exist_ok=True)
 
-        # ----------------------------------------------
-        # URL
-        # ----------------------------------------------
+        # Optional or required Image
+        image = request.files.get("image")
+        if image and image.filename:
+            if not allowed_file(image.filename, ALLOWED_IMAGE_EXTENSIONS):
+                flash("Invalid image file type.", "error")
+                return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-        new_source_url = request.form.get(
-            "source_url",
-            ""
-        ).strip()
+            if get_file_size(image) > MAX_IMAGE_SIZE:
+                flash("Image file exceeds maximum allowed size of 10 MB.", "error")
+                return redirect(url_for("user.provide_information", news_id=news_record.id))
 
+            filename = generate_unique_filename(image.filename)
+            if filename:
+                image.save(UPLOAD_FOLDER / filename)
+                news_record.image_path = f"uploads/{filename}"
+        elif requested_fields["image"] and not news_record.image_path:
+            flash("Please upload the requested photo/image.", "error")
+            return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-        # ----------------------------------------------
-        # Validation
-        # ----------------------------------------------
+        # Optional or required Video
+        video = request.files.get("video")
+        if video and video.filename:
+            if not allowed_file(video.filename, ALLOWED_VIDEO_EXTENSIONS):
+                flash("Invalid video file type.", "error")
+                return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-        if requested_fields["additional_information"]:
+            if get_file_size(video) > MAX_VIDEO_SIZE:
+                flash("Video file exceeds maximum allowed size of 100 MB.", "error")
+                return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-            if not additional_information:
+            filename = generate_unique_filename(video.filename)
+            if filename:
+                video.save(UPLOAD_FOLDER / filename)
+                news_record.video_path = f"uploads/{filename}"
+        elif requested_fields["video"] and not news_record.video_path:
+            flash("Please upload the requested video.", "error")
+            return redirect(url_for("user.provide_information", news_id=news_record.id))
 
-                flash(
-                    "Please provide the requested additional information.",
-                    "error"
+        if new_source_url:
+            news_record.source_url = new_source_url
+
+        if additional_info:
+            existing = (news_record.supporting_information or "").strip()
+            if existing:
+                news_record.supporting_information = (
+                    f"{existing}\n\n[User Response]:\n{additional_info}"
                 )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-        if requested_fields["url"]:
-
-            if not new_source_url:
-
-                flash(
-                    "Please provide the requested source URL.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-        # ----------------------------------------------
-        # Upload Folder
-        # ----------------------------------------------
-
-        UPLOAD_FOLDER.mkdir(
-            parents=True,
-            exist_ok=True
-        )
-
-
-        # ==================================================
-        # IMAGE UPLOAD
-        # ==================================================
-
-        if requested_fields["image"]:
-
-            image = request.files.get("image")
-
-
-            if not image or not image.filename:
-
-                flash(
-                    "Please provide the requested photo/image.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            if not allowed_file(
-                image.filename,
-                ALLOWED_IMAGE_EXTENSIONS
-            ):
-
-                flash(
-                    "Invalid image file type.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            # Validate image size
-
-            image_size = get_file_size(image)
-
-            if image_size > MAX_IMAGE_SIZE:
-
-                flash(
-                    "Image file is too large. "
-                    "Maximum allowed size is 10 MB.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            # Generate secure unique filename
-
-            filename = generate_unique_filename(
-                image.filename
-            )
-
-            if not filename:
-
-                flash(
-                    "Invalid image filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            image_path = f"uploads/{filename}"
-
-
-            image.save(
-                UPLOAD_FOLDER / filename
-            )
-
-
-            news.image_path = image_path
-
-
-        # ==================================================
-        # VIDEO UPLOAD
-        # ==================================================
-
-        if requested_fields["video"]:
-
-            video = request.files.get("video")
-
-
-            if not video or not video.filename:
-
-                flash(
-                    "Please provide the requested video.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            if not allowed_file(
-                video.filename,
-                ALLOWED_VIDEO_EXTENSIONS
-            ):
-
-                flash(
-                    "Invalid video file type.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            # Validate video size
-
-            video_size = get_file_size(video)
-
-            if video_size > MAX_VIDEO_SIZE:
-
-                flash(
-                    "Video file is too large. "
-                    "Maximum allowed size is 100 MB.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            # Generate secure unique filename
-
-            filename = generate_unique_filename(
-                video.filename
-            )
-
-            if not filename:
-
-                flash(
-                    "Invalid video filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.provide_information",
-                        news_id=news.id
-                    )
-                )
-
-
-            video_path = f"uploads/{filename}"
-
-
-            video.save(
-                UPLOAD_FOLDER / filename
-            )
-
-
-            news.video_path = video_path
-
-
-        # ==================================================
-        # SAVE URL
-        # ==================================================
-
-        if requested_fields["url"]:
-
-            news.source_url = new_source_url
-
-
-        # ==================================================
-        # SAVE ADDITIONAL INFORMATION
-        # ==================================================
-
-        if requested_fields["additional_information"]:
-
-            existing_information = (
-                news.supporting_information or ""
-            ).strip()
-
-
-            if existing_information:
-
-                news.supporting_information = (
-                    existing_information
-                    + "\n\n"
-                    + "Additional Information provided by user:\n"
-                    + additional_information
-                )
-
             else:
+                news_record.supporting_information = f"[User Response]:\n{additional_info}"
 
-                news.supporting_information = (
-                    "Additional Information provided by user:\n"
-                    + additional_information
-                )
-
-
-        # ==================================================
-        # START AI PROCESSING
-        # ==================================================
-
-        news.status = "AI_PROCESSING"
-
-        news.admin_comment = None
-
+        news_record.status = "AI_PROCESSING"
+        news_record.admin_comment = None
         db.session.commit()
 
-
-        # ==================================================
-        # REGENERATE AI NEWS DRAFT
-        # ==================================================
-
+        # Regenerate AI draft
         try:
+            ai_result = generate_news_draft(news_record)
 
-            print("\n======================================")
-            print("AI NEWS REGENERATION STARTED")
-            print("News ID:", news.id)
-            print("======================================\n")
+            news_record.ai_headline = ai_result.get("headline")
+            news_record.ai_subheading = ai_result.get("subheading")
+            news_record.ai_summary = ai_result.get("summary")
+            news_record.ai_article = ai_result.get("article")
 
-            ai_result = generate_news_draft(news)
+            key_facts = ai_result.get("key_facts", [])
+            news_record.key_facts = json.dumps(key_facts, ensure_ascii=False) if isinstance(key_facts, list) else str(key_facts)
 
-            # ----------------------------------------------
-            # Update AI Content
-            # ----------------------------------------------
+            tags = ai_result.get("tags", [])
+            news_record.tags = json.dumps(tags, ensure_ascii=False) if isinstance(tags, list) else str(tags)
 
-            news.ai_headline = ai_result["headline"]
-
-            news.ai_subheading = ai_result["subheading"]
-
-            news.ai_summary = ai_result["summary"]
-
-            news.ai_article = ai_result["article"]
-
-            news.key_facts = json.dumps(
-                ai_result["key_facts"],
-                ensure_ascii=False
-            )
-
-            news.tags = json.dumps(
-                ai_result["tags"],
-                ensure_ascii=False
-            )
-
-            # ----------------------------------------------
-            # Return to Admin Review
-            # ----------------------------------------------
-
-            news.status = "PENDING_REVIEW"
-
+            news_record.status = "PENDING_REVIEW"
             db.session.commit()
 
-            print("\n======================================")
-            print("AI NEWS REGENERATION SUCCESSFUL")
-            print("News ID:", news.id)
-            print("Status:", news.status)
-            print("======================================\n")
-
-            flash(
-                "Additional information submitted successfully. "
-                "AI draft has been regenerated and the news is "
-                "waiting for admin review again.",
-                "success"
-            )
-
+            flash("Additional information submitted and AI draft updated. Sent for admin review.", "success")
         except Exception as error:
-
-            print("\n======================================")
-            print("AI NEWS REGENERATION FAILED")
-            print("News ID:", news.id)
-            print("Error:", error)
-            print("======================================\n")
-
-            news.status = "AI_PROCESSING_FAILED"
-
+            print(f"[AI REGENERATION ERROR] News ID {news_record.id}: {error}")
+            news_record.status = "AI_PROCESSING_FAILED"
             db.session.commit()
+            flash("Information saved, but AI draft regeneration failed. Please try again later.", "error")
 
-            flash(
-                "Additional information was saved, but AI "
-                "processing failed. Please try again later.",
-                "error"
-            )
-
-        return redirect(
-            url_for("user.my_news")
-        )
-
-    # ==================================================
-    # GET REQUEST
-    # ==================================================
+        return redirect(url_for("user.my_news"))
 
     return render_template(
         "provide_information.html",
-        news=news,
+        news=news_record,
         requested_fields=requested_fields
     )

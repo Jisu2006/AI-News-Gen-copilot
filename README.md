@@ -1,978 +1,398 @@
-<<<<<<< HEAD
 # AI-NewsGen Copilot
 
 ## AI-Powered Digital Newspaper and News Drafting Platform
 
-AI-NewsGen Copilot is a web-based digital newspaper platform that allows users to submit news incidents and uses Large Language Model (LLM) technology to generate a structured news draft.
+**AI-NewsGen Copilot** is a digital news management platform that combines community-driven news reporting with Large Language Model (LLM) drafting and human-in-the-loop editorial moderation.
 
-The generated news is not published directly. It goes through an admin review and approval process before becoming publicly available.
+Public visitors can read published news, explore categories, search, and filter news stories. Registered users submit incident details, photos, and videos, which Google Gemini transforms into structured news drafts (headline, subheading, executive summary, article, key facts, and tags). Administrators review, request additional information, edit, approve, and publish the verified stories to the public newspaper website.
 
-The system is designed to support a complete workflow from news submission to AI-assisted drafting, admin verification, editing, approval, and publication.
-
----
-
-## Project Overview
-
-The main purpose of AI-NewsGen Copilot is to make the process of creating and managing digital news faster and more structured.
-
-A user can submit information about an incident in the form of:
-
-- Category
-- Location
-- Incident date and time
-- Bullet points
-- Additional description
-- Image
-- Video
-- Source URL
-- Supporting information
-
-The AI system uses the submitted information to generate:
-
-- News headline
-- Subheading
-- Summary
-- Full news article
-- Key facts
-- Tags
-
-The AI-generated content is stored as a draft and sent to the administrator for review.
-
-The administrator can:
-
-- Review the news
-- Edit the AI-generated content
-- Request additional information
-- Approve the news
-- Reject the news
-- Publish the news
-
-Only approved and published news becomes available on the public newspaper website.
+AI never publishes directly without administrator review.
 
 ---
 
-## Main Objective
+## Table of Contents
 
-The objective of this project is to develop an AI-assisted digital news platform that combines:
-
-- Web application development
-- Database management
-- AI/LLM-based content generation
-- Role-based access control
-- Admin moderation
-- Secure news publishing workflow
-
-## Key Features
-
-### 1. User Authentication
-
-- User registration with name, email, and password
-- Secure password hashing
-- User login and logout
-- Session-based authentication
-- Role-based access control
-
-### 2. News Submission
-
-Registered users can submit news incidents with:
-
-- News category
-- News title
-- Location
-- Incident date and time
-- Bullet points
-- Additional description
-- Image upload
-- Video upload
-- Source URL
-- Supporting information
-
-### 3. AI-Powered News Generation
-
-The system uses an LLM to generate a structured news draft from the information submitted by the user.
-
-AI-generated content includes:
-
-- Headline
-- Subheading
-- Summary
-- News article
-- Key facts
-- Tags
-
-The AI is instructed to use only the information provided by the user and avoid inventing unsupported facts.
-
-### 4. Admin Review System
-
-Administrators can manage submitted news through an admin dashboard.
-
-Admin capabilities include:
-
-- View submitted news
-- Review AI-generated drafts
-- Edit news content
-- Request additional information
-- Approve news
-- Reject news
-- Publish approved news
-- Mark news as breaking
-- Mark news as featured
-
-### 5. Information Request & Regeneration
-
-If the submitted information is insufficient, the administrator can request additional information from the user.
-
-The user can provide the requested information, after which the AI can regenerate the news draft.
-
-### 6. Public Digital Newspaper
-
-Published news is available to public visitors without requiring login.
-
-Public users can:
-
-- Browse latest news
-- View breaking news
-- View featured news
-- Browse news by category
-- Search news
-- Filter news
-- View complete news articles
-
-### 7. Audit Trail
-
-Administrative actions are recorded in the database.
-
-The audit trail helps track actions such as:
-
-- News editing
-- Information requests
-- Approval
-- Rejection
-- Publication
-
-### 8. Security Features
-
-The application includes security measures such as:
-
-- Password hashing
-- Session-based authentication
-- Role-based access control
-- CSRF protection
-- Input validation
-- File upload validation
-- SQLAlchemy-based database queries
-- XSS protection through template auto-escaping
-- Environment variables for sensitive configuration
-
-## User & Admin Workflow
-
-### User Workflow
-
-The user workflow follows these steps:
-
-1. User opens the public newspaper homepage.
-2. User selects **Submit News**.
-3. If the user is not logged in, the system redirects the user to the User Login page.
-4. User registers an account if they do not already have one.
-5. User logs into the system.
-6. User opens the User Dashboard.
-7. User submits news information through the news submission form.
-8. The submitted information is stored in the database.
-9. The system sends the submitted information to the AI/LLM service.
-10. The AI generates a structured news draft.
-11. The AI-generated draft is stored separately from the original user submission.
-12. The news is sent to the administrator for review.
-13. The user can track the current status of their submitted news.
-14. If the administrator requests additional information, the user provides the required information.
-15. The AI can regenerate the news draft using the updated information.
-16. After administrator approval and publication, the news becomes available on the public newspaper website.
+1. [Project Overview](#project-overview)
+2. [Key Features](#key-features)
+3. [Technology Stack](#technology-stack)
+4. [Project Architecture](#project-architecture)
+5. [Folder Structure](#folder-structure)
+6. [Installation & Setup](#installation--setup)
+7. [Environment Variables](#environment-variables)
+8. [Database Setup & Schema](#database-setup--schema)
+9. [How to Run](#how-to-run)
+10. [User Workflow](#user-workflow)
+11. [Admin Workflow](#admin-workflow)
+12. [AI Drafting Workflow](#ai-drafting-workflow)
+13. [Security Implementations](#security-implementations)
+14. [Testing & Quality Assurance](#testing--quality-assurance)
+15. [Limitations](#limitations)
+16. [Future Scope](#future-scope)
+17. [Project Status](#project-status)
+18. [Author Information](#author-information)
 
 ---
 
-### Admin Workflow
+## 1. Project Overview
 
-The administrator workflow follows these steps:
+Digital newsrooms face challenges in rapidly processing incident reports into professional, coherent news drafts while preventing misinformation. **AI-NewsGen Copilot** bridges this gap:
 
-1. Administrator opens the Admin Login page.
-2. Administrator logs into the system using admin credentials.
-3. Administrator opens the Admin Dashboard.
-4. Administrator views news submitted by users.
-5. Administrator reviews the AI-generated news draft.
-6. Administrator can edit the generated content if required.
-7. Administrator can request additional information from the user.
-8. Administrator can approve the news.
-9. Administrator can reject the news.
-10. Approved news can be published by the administrator.
-11. Published news becomes visible on the public newspaper website.
-12. Administrative actions are recorded in the audit trail.
+- **Public Audience**: Free access to breaking, featured, and categorized news.
+- **User Contributors**: Submit structured incident reports with multimedia.
+- **AI Copilot (Gemini)**: Rapidly drafts articles adhering strictly to submitted facts with zero fabrication.
+- **Editorial Board (Admin)**: Full control to request further evidence, edit, approve, or reject submissions before publication.
 
 ---
 
-### News Status Workflow
+## 2. Key Features
 
-The news submission follows a controlled status workflow:
+### 📰 Public Newspaper
+- **Homepage**: Displays latest, breaking, and featured stories with category and location filters.
+- **Live Search**: Full-text and keyword search across headlines, content, tags, locations, and categories.
+- **Dynamic Category Pages**: Filter news by topics such as Local News, Accidents, Crime, Sports, Technology, Business, Politics, Education, Weather, Events, etc.
+- **Dedicated Feeds**: Breaking News, Latest News, and Featured News sections.
+- **News Details**: Clean typography, hero images, embedded video player, executive summary, key facts list, tags, and related stories.
 
-```text
-DRAFT
-  ↓
-SUBMITTED
-  ↓
-AI_PROCESSING
-  ↓
-AI_DRAFT
-  ↓
-PENDING_REVIEW
-  ↓
-┌───────────────────────┐
-│                       │
-↓                       ↓
-APPROVED          NEEDS_INFORMATION
-  ↓                       ↓
-PUBLISHED          User Provides Information
-                          ↓
-                    AI Regeneration
-                          ↓
-                    PENDING_REVIEW
+### 👤 User Portal & Authentication
+- **Secure Registration**: Name, email, and password validation with bcrypt hashing.
+- **OTP Verification**: Secure 6-digit One-Time Password sent via Gmail SMTP with expiration (10 min) and cooldown protection (60s).
+- **Session-Based Authentication**: Strict role segregation preventing standard users from accessing admin routes.
+- **User Dashboard**: Track submission statistics (total submissions, pending reviews, published articles, info requests).
+- **News Submission**: Support for category, incident date/time, bullet points, narrative description, image upload, video upload, source link, and supporting evidence.
+- **Draft Mode**: Save in-progress submissions before sending to AI processing.
+- **My News**: View status badges (`DRAFT`, `AI_PROCESSING`, `PENDING_REVIEW`, `NEEDS_INFORMATION`, `APPROVED`, `PUBLISHED`, `REJECTED`, `AI_PROCESSING_FAILED`).
+- **Provide Additional Information**: Direct response interface for editor queries with automatic AI regeneration.
 
-PENDING_REVIEW
-  ↓
-REJECTED
+### 🛡️ Administrator Editorial Desk
+- **Admin Dashboard**: Real-time counters and queues for Pending Review, Approved (Ready to Publish), and Published News.
+- **Audit Trail**: Detailed log of all administrative actions (`APPROVED`, `EDITED`, `PUBLISHED`, `REQUEST_INFORMATION`, `REJECTED`).
+- **Three-Way Comparison**: Inspect original user input, AI-generated draft, and editorial final content.
+- **Editorial Review Actions**:
+  - **Approve**: Mark draft as approved, configure breaking/featured flags.
+  - **Request Additional Information**: Send specific requests back to the user with feedback.
+  - **Reject**: Reject submission with explanation.
+  - **Edit Content**: Modify headlines, summaries, full articles, key facts, and tags.
+  - **Publish**: Release approved articles to the live public newspaper.
 
-## AI / LLM Integration
+### 🤖 AI News Drafting (Gemini)
+- **Strict Anti-Hallucination Prompting**: System prompt strictly enforces that only user-provided facts are used.
+- **Date Safety Enforcement**: Disallows fabricated dates when incident date is omitted by the user.
+- **Structured JSON Schema**: Produces headlines, subheadings, executive summaries, articles, key facts, and tags.
+- **Fault-Tolerant Retries**: Automatic retry handling for transient API errors (429/503) and fallback failure states (`AI_PROCESSING_FAILED`).
 
-AI-NewsGen Copilot uses a Large Language Model (LLM) to assist in generating structured news drafts from user-submitted information.
+---
 
-### AI Generation Process
+## 3. Technology Stack
 
-The AI workflow is:
+- **Backend**: Python 3.10+, Flask 3.1.3
+- **ORM & Database**: Flask-SQLAlchemy 3.1.1, SQLAlchemy 2.0.52, PyMySQL 1.2.0, MySQL 8.0
+- **AI / LLM**: Google GenAI SDK (`google-genai`), Gemini 3.6 Flash / Gemini 2.5 Flash
+- **Security & Forms**: Werkzeug (Password Hashing), Flask-WTF (CSRF Protection)
+- **Email Delivery**: Standard Library `smtplib` + `email.mime` (Gmail SMTP over TLS 587)
+- **Frontend**: HTML5, Jinja2, Vanilla CSS (`app.css`), Bootstrap 5.3.3, Bootstrap Icons 1.11.3
 
-1. User submits news information.
-2. The submitted information is collected by the Flask backend.
-3. The backend prepares the information using a predefined news-generation prompt.
-4. The information is sent to the configured LLM service.
-5. The LLM generates a structured news draft.
-6. The generated content is parsed by the application.
-7. The AI-generated content is stored in the database.
-8. The generated draft is sent to the administrator for review.
-9. The administrator can edit, approve, reject, or request additional information.
-10. Only approved content can be published.
+---
 
-### AI-Generated Fields
+## 4. Project Architecture
 
-The LLM generates the following fields:
+```
+                      +-------------------+
+                      |  Public Visitor   |
+                      +---------+---------+
+                                |
+               +----------------+----------------+
+               |                                 |
+       [Read / Search / Filter]          [Submit News Click]
+               |                                 |
+               v                                 v
+      +-----------------+              +-------------------+
+      | Published News  |              | User Login / Reg  |
+      +-----------------+              +---------+---------+
+                                                 |
+                                                 v
+                                       +-------------------+
+                                       |  User Dashboard   |
+                                       +---------+---------+
+                                                 |
+                                                 v
+                                       +-------------------+
+                                       | Submit Incident   |
+                                       +---------+---------+
+                                                 |
+                                                 v
+                                       +-------------------+
+                                       |  Gemini AI Draft  |
+                                       +---------+---------+
+                                                 |
+                                                 v
+                                       +-------------------+
+                                       |   Admin Review    |
+                                       +----+---------+----+
+                                            |         |
+                      +---------------------+         +---------------------+
+                      |                                                     |
+                      v                                                     v
+            [Request More Info]                                         [Approve]
+                      |                                                     |
+                      v                                                     v
+            [User Responds]                                            [Publish]
+                      |                                                     |
+                      v                                                     v
+            [AI Regenerates]                                          [Public Site]
+                      |
+                      +---------------------> [Admin Review]
+```
 
-- Headline
-- Subheading
-- Summary
-- News Article
-- Key Facts
-- Tags
+---
 
-### AI Content Safety Rules
+## 5. Folder Structure
 
-The news-generation system is designed to generate content only from the information provided by the user.
-
-The AI should not:
-
-- Invent names or people
-- Invent numbers or statistics
-- Invent quotes
-- Invent witnesses
-- Invent locations
-- Invent dates or times
-- Invent causes or explanations
-- Add unsupported official statements
-- Add information that is not present in the submitted content
-
-If important information is not provided, the AI should omit it instead of making assumptions.
-
-The AI is used for **news drafting and content structuring**, not for independently verifying whether a news report is true or false.
-
-### AI Failure Handling
-
-If the LLM service fails or does not return a usable response, the system handles the failure using the status:
-
-`AI_PROCESSING_FAILED`
-
-This prevents an AI failure from being treated as a successful news generation.
-
-The original user-submitted information is preserved separately from the AI-generated draft so that the original data is not lost.
-
-## Technology Stack
-
-### Frontend
-
-- HTML5
-- CSS3
-- JavaScript
-- Bootstrap 5
-- Bootstrap Icons
-
-### Backend
-
-- Python
-- Flask
-- Flask-SQLAlchemy
-- Jinja2 Templates
-
-### Database
-
-- MySQL
-- SQLAlchemy ORM
-- PyMySQL
-
-### Artificial Intelligence
-
-- Large Language Model (LLM)
-- Gemini API
-- AI-based news draft generation
-
-### Authentication & Security
-
-- Werkzeug Password Hashing
-- Flask Session
-- Flask-WTF / CSRF Protection
-- Role-Based Access Control (RBAC)
-- Input Validation
-- File Upload Validation
-- Environment Variables using `.env`
-
-### Development Tools
-
-- Visual Studio Code
-- Python Virtual Environment (`venv`)
-- Git & GitHub
-
-## Project Structure
-
-```text
-AI-NewsGen Copilot/
-│
-├── app.py
-├── config.py
-├── requirements.txt
-├── README.md
-├── .env
-├── .gitignore
-│
+```
+AI-News-Gen-copilot/
+├── app.py                      # Flask Application entry point & factory
+├── config.py                   # App Configuration & environment loader
+├── reset_admin.py              # Admin account seed/reset script
+├── requirements.txt            # Python dependencies
+├── .env                        # Environment variables (secrets)
+├── .gitignore                  # Git ignore rules
 ├── database/
-│   └── db.py
-│
-├── models/
-│   └── database_models.py
-│
-├── routes/
-│   ├── auth.py
-│   ├── user.py
-│   ├── news.py
-│   └── admin.py
-│
+│   └── db.py                   # SQLAlchemy instance
 ├── llm/
-│   ├── llm_service.py
-│   ├── news_generator.py
-│   └── prompts.py
-│
-├── templates/
-│   ├── auth/
-│   │   ├── user_login.html
-│   │   └── admin_login.html
-│   │
-│   ├── admin/
-│   │   ├── dashboard.html
-│   │   ├── review_news.html
-│   │   └── edit_news.html
-│   │
-│   ├── home.html
-│   ├── latest_news.html
-│   ├── breaking_news.html
-│   ├── featured_news.html
-│   ├── categories.html
-│   ├── about.html
-│   ├── user_dashboard.html
-│   ├── submit_news.html
-│   ├── my_news.html
-│   ├── provide_information.html
-│   └── news_detail.html
-│
+│   ├── __init__.py             # LLM package marker
+│   ├── llm_service.py          # Gemini Client integration & retry handler
+│   ├── news_generator.py       # News drafting orchestration & validation
+│   └── prompts.py              # Strict factual news system prompts
+├── models/
+│   └── database_models.py      # User, News, AdminAction, OTPVerification models
+├── routes/
+│   ├── auth.py                 # User/Admin login, registration, OTP, logout
+│   ├── user.py                 # User dashboard, submission, My News, info update
+│   ├── admin.py                # Admin dashboard, review, edit, publish
+│   └── news.py                 # Public homepage, detail, latest, breaking, categories
+├── services/
+│   ├── __init__.py             # Services package marker
+│   ├── email_service.py        # SMTP email delivery for OTP codes
+│   └── otp_service.py          # Secure OTP generation, hashing & verification
 ├── static/
 │   ├── css/
-│   │   └── app.css
-│   │
-│   └── uploads/
-│
-└── utils/
-    └── ...
+│   │   └── app.css             # Theme design system & custom styles
+│   └── uploads/                # User uploaded media (images & videos)
+├── templates/
+│   ├── admin/
+│   │   ├── dashboard.html      # Admin management desk
+│   │   ├── review_news.html    # Three-way review & approval screen
+│   │   └── edit_news.html      # Editorial draft modification screen
+│   ├── auth/
+│   │   ├── user_login.html     # User login portal
+│   │   ├── admin_login.html    # Administrator login portal
+│   │   └── verify_otp.html     # OTP code entry & resend interface
+│   ├── errors/
+│   │   └── error.html          # Custom 400, 403, 404, 405, 413, 500 error pages
+│   ├── news/
+│   │   ├── home.html           # Main newspaper homepage
+│   │   ├── detail.html         # Individual article reading view
+│   │   ├── latest_news.html    # Chronological published news feed
+│   │   ├── breaking_news.html  # High-priority breaking news feed
+│   │   ├── featured_news.html  # Curated featured news feed
+│   │   ├── categories.html     # Topic browsing directory
+│   │   └── about.html          # About the platform
+│   ├── login.html              # Login redirect helper
+│   ├── register.html           # User registration form
+│   ├── user_dashboard.html     # User activity overview
+│   ├── submit_news.html        # News creation & media upload form
+│   ├── my_news.html            # User submission tracking table
+│   └── provide_information.html# Additional info submission view
+└── tests/
+    ├── test_llm.py             # LLM standalone test
+    └── test_comprehensive.py   # Full unit and integration test suite
+```
 
-## Database Structure
+---
 
-AI-NewsGen Copilot uses **MySQL** as the relational database and **SQLAlchemy ORM** for database operations.
-
-### Main Database Tables
-
-The application currently uses the following main tables:
-
-- `users`
-- `news`
-- `admin_actions`
-
-### 1. Users Table
-
-The `users` table stores user and administrator account information.
-
-Main fields include:
-
-- `id` — Unique user ID
-- `name` — User name
-- `email` — User email address
-- `password_hash` — Securely hashed password
-- `role` — User role (`user` or `admin`)
-- `created_at` — Account creation timestamp
-- `updated_at` — Last update timestamp
-
-### 2. News Table
-
-The `news` table stores the complete news submission and generation workflow.
-
-It contains:
-
-#### Original User Submission
-
-- User ID
-- Category
-- Title
-- Location
-- Incident date
-- Incident time
-- Bullet points
-- Additional description
-- Image path
-- Video path
-- Source URL
-- Supporting information
-
-#### AI-Generated Content
-
-- AI headline
-- AI subheading
-- AI summary
-- AI article
-- Key facts
-- Tags
-
-#### Final/Administrative Content
-
-- Final headline
-- Final subheading
-- Final summary
-- Final article
-- News status
-- Admin comment
-- Breaking news flag
-- Featured news flag
-- Published timestamp
-- Created timestamp
-- Updated timestamp
-
-The original user submission and AI-generated content are maintained separately so that the original information is preserved.
-
-### 3. Admin Actions Table
-
-The `admin_actions` table stores administrative activities performed on news articles.
-
-Main fields include:
-
-- `id` — Unique action ID
-- `admin_id` — Administrator who performed the action
-- `news_id` — Related news ID
-- `action` — Action performed
-- `comment` — Optional administrative comment
-- `created_at` — Action timestamp
-
-### Database Relationships
-
-```text
-User
- │
- └───< News
-        │
-        └───< AdminAction
-
-User
- │
- └───< AdminAction
-
-## Installation & Setup
-
-Follow the steps below to set up AI-NewsGen Copilot on a local system.
+## 6. Installation & Setup
 
 ### Prerequisites
+- Python 3.10+
+- MySQL 8.0+
+- Google Gemini API Key
 
-Make sure the following software is installed:
+### Step 1: Clone and Enter Directory
+```bash
+git clone https://github.com/Jisu2006/AI-News-Gen-copilot.git
+cd AI-News-Gen-copilot
+```
 
-- Python 3.10.7
-- MySQL
-- Git
-- Visual Studio Code
+### Step 2: Create and Activate Virtual Environment
+```bash
+# Windows
+python -m venv venv
+.\venv\Scripts\activate
+
+# Linux/macOS
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### Step 3: Install Dependencies
+```bash
+pip install -r requirements.txt
+```
 
 ---
 
-### 1. Clone the Project
+## 7. Environment Variables
 
-Clone the project repository:
-
-```bash
-git clone <YOUR_GITHUB_REPOSITORY_URL>
-
-## Environment Variables & Configuration
-
-AI-NewsGen Copilot uses environment variables to keep sensitive configuration separate from the source code.
-
-### Environment Variables
-
-The project uses the following environment variables:
-
-| Variable | Purpose |
-|---|---|
-| `SECRET_KEY` | Secures Flask sessions and application security |
-| `DATABASE_URL` | MySQL database connection |
-| `GEMINI_API_KEY` | Authentication for the Gemini LLM service |
-| `GEMINI_MODEL` | Configured Gemini model used for AI generation |
-
-### Example `.env` Configuration
+Create a `.env` file in the project root:
 
 ```env
-SECRET_KEY=your_secret_key
+SECRET_KEY=your-super-secret-flask-key
+DATABASE_URL=mysql+pymysql://root:password@localhost/ai_newsgen
 
-DATABASE_URL=mysql+pymysql://USERNAME:PASSWORD@localhost/ai_newsgen
+# Gmail SMTP Configuration for OTP
+MAIL_SERVER=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USE_TLS=True
+MAIL_USERNAME=your-email@gmail.com
+MAIL_PASSWORD=your-gmail-app-password
+MAIL_DEFAULT_SENDER=your-email@gmail.com
 
-GEMINI_API_KEY=your_gemini_api_key
-
-GEMINI_MODEL=your_configured_gemini_model
-
-## Application Features & User Roles
-
-AI-NewsGen Copilot provides different features based on the role of the user.
-
-### Public Visitor
-
-A public visitor can access the newspaper without logging in.
-
-Features include:
-
-- View homepage
-- View latest news
-- View breaking news
-- View featured news
-- Browse news categories
-- Search news
-- Filter news
-- Read published news articles
-- Access About page
-- Access Submit News
-- Access Admin Login
-
-To submit news, a visitor must first log in as a registered user.
+# Google Gemini API
+GEMINI_API_KEY=your-gemini-api-key
+GEMINI_MODEL=gemini-3.6-flash
+```
 
 ---
 
-### Registered User
+## 8. Database Setup & Schema
 
-A registered user can:
+1. Create the MySQL database:
+```sql
+CREATE DATABASE ai_newsgen CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+```
 
-- Register an account
-- Login and logout
-- Access the User Dashboard
-- Submit news
-- Upload supporting media
-- View submitted news
-- Track news status
-- View AI-generated drafts
-- Provide additional information when requested
-- Trigger AI regeneration after providing requested information
+2. Automatic Table Creation:
+Flask automatically synchronizes tables on first startup via `db.create_all()` in `app.py`.
 
-Users cannot directly publish news.
+3. Primary Tables:
+- `users`: User and admin credentials, roles, email verification status.
+- `news`: Full news lifecycle records (user inputs, AI outputs, editorial edits, flags, status).
+- `admin_actions`: Complete editorial audit log.
+- `otp_verifications`: Hashed OTP tokens, attempt tracking, cooldown, and expiration.
 
----
-
-### Administrator
-
-An administrator has access to the Admin Dashboard.
-
-Admin features include:
-
-- View submitted news
-- Review AI-generated drafts
-- Edit news
-- Request additional information
-- Approve news
-- Reject news
-- Publish approved news
-- Mark news as breaking
-- Mark news as featured
-- View administrative actions through the audit trail
-
-Administrators are responsible for reviewing AI-generated content before publication.
+4. Seed Admin Account:
+```bash
+python reset_admin.py
+```
+*(Default Admin: `jisu@gmail.com` / Password: `Admin@12345`)*
 
 ---
 
-### Role-Based Access Control
+## 9. How to Run
 
-The application uses role-based access control to restrict protected features.
-
-```text
-Public Visitor
-      │
-      ├── Public News
-      ├── Search & Filters
-      └── Submit News → User Login
-                         │
-                         ↓
-                    User Dashboard
-                         │
-                         └── News Submission
-
-
-Administrator
-      │
-      └── Admin Login
-              │
-              ↓
-        Admin Dashboard
-              │
-              ├── Review
-              ├── Edit
-              ├── Request Information
-              ├── Approve
-              ├── Reject
-              └── Publish
-
-## Testing & Security Status
-
-The application has been tested across the major user, admin, news submission, AI generation, and public news workflows.
-
-### Functional Testing
-
-The following areas have been tested:
-
-- Public homepage and navigation
-- User registration and login
-- User logout
-- Admin login
-- News submission
-- AI-based news generation
-- Admin news review
-- Admin news editing
-- Request for additional information
-- User information submission
-- AI news regeneration
-- News approval
-- News rejection
-- News publication
-- My News and status tracking
-- Public news detail pages
-- Search functionality
-- Category and news filters
-- Breaking news
-- Featured news
-- Protected page access
-- Invalid news ID handling
-- Invalid source URL handling
-- File upload validation
-- Long input handling
-- XSS/HTML input handling
-
-### Security Testing
-
-Security-related checks include:
-
-- Password hashing
-- Authentication and session management
-- Role-based access control
-- CSRF protection
-- Input validation
-- File upload validation
-- SQLAlchemy ORM usage
-- XSS protection through template auto-escaping
-- Sensitive configuration stored using environment variables
-- Protected user and administrator routes
-
-### Access Control Testing
-
-The following access-control scenarios have been verified:
-
-- Users cannot access administrator dashboard pages.
-- Administrators cannot access user dashboard pages.
-- Logged-out visitors cannot access protected user pages.
-- Public visitors can access published news without authentication.
-
-### AI Reliability
-
-The AI generation workflow includes failure handling.
-
-If the LLM service fails or returns an unusable response, the news can be marked with:
-
-```text
-AI_PROCESSING_FAILED
-
-## Security Features
-
-AI-NewsGen Copilot includes multiple security measures to protect user data, application functionality, and administrative operations.
-
-### Authentication
-
-- User authentication using email and password
-- Administrator authentication using a separate admin login
-- Secure password hashing using Werkzeug
-- Session-based authentication
-- Session clearing during logout
-
-### Authorization
-
-The application uses Role-Based Access Control (RBAC).
-
-Two primary roles are supported:
-
-- `user`
-- `admin`
-
-Protected routes verify the user's role before allowing access.
-
-### CSRF Protection
-
-Cross-Site Request Forgery (CSRF) protection is implemented using Flask-WTF.
-
-CSRF tokens are included in protected forms such as:
-
-- User registration
-- User login
-- Admin login
-- News submission
-- Information submission
-- Admin review
-- Admin editing
-- News publication
-
-### Input Validation
-
-User-provided data is validated before processing.
-
-Validation includes:
-
-- Required field validation
-- Password length validation
-- Duplicate email validation
-- URL validation
-- File upload validation
-- Appropriate handling of invalid input
-
-### XSS Protection
-
-The application uses Jinja2 template auto-escaping to help prevent Cross-Site Scripting (XSS) attacks.
-
-User-submitted HTML or JavaScript is not intentionally rendered as executable HTML.
-
-### Database Security
-
-The application uses SQLAlchemy ORM for database operations.
-
-This reduces the need to construct raw SQL queries from user-provided input and helps protect against SQL injection vulnerabilities.
-
-### File Upload Security
-
-Uploaded images and videos are validated before being accepted by the application.
-
-Uploaded files are stored separately from the application's source code.
-
-### Sensitive Configuration
-
-Sensitive information such as:
-
-- Secret keys
-- Database credentials
-- Gemini API credentials
-
-is stored in the `.env` file rather than directly in application source code.
-
-The `.env` file is excluded from version control using `.gitignore`.
-
-### News Content Protection
-
-The original user-submitted information is preserved separately from AI-generated and administrator-edited content.
-
-This helps maintain the integrity of the original submission throughout the news review process.
-
-## Future Scope
-
-AI-NewsGen Copilot can be further enhanced with additional AI-powered and platform-level capabilities.
-
-Possible future enhancements include:
-
-- Automatic news category detection
-- Duplicate news detection
-- Fake news detection
-- Advanced misinformation analysis
-- News credibility and source analysis
-- Automated fact-checking
-- Multi-language news generation
-- Advanced AI-based news summarization
-- Personalized news recommendations
-- Real-time breaking news notifications
-- Mobile application
-- Cloud deployment and scalable infrastructure
-- Advanced analytics and reporting dashboard
-
-These features are considered future enhancements and are not part of the current core implementation.
+### Start the Application:
+```bash
+python app.py
+```
+Visit `http://127.0.0.1:5000` in your web browser.
 
 ---
 
-## Current Limitations
+## 10. User Workflow
 
-The current version of AI-NewsGen Copilot has the following limitations:
-
-- AI-generated content still requires human administrator review.
-- The AI system does not independently verify whether submitted information is true or false.
-- Automatic fake-news detection is not currently implemented.
-- Automatic duplicate-news detection is not currently implemented.
-- Automatic category detection is not currently implemented.
-- The application currently focuses on AI-assisted news drafting rather than fully autonomous news publishing.
-- Deployment and production-level infrastructure configuration are outside the current local development setup.
-
-The administrator remains responsible for reviewing and approving news before publication.
-
-## How to Use the Application
-
-### For Public Visitors
-
-1. Open the AI-NewsGen Copilot homepage.
-2. Browse published news from the homepage.
-3. Use the navigation menu to access:
-   - Latest News
-   - Breaking News
-   - Featured News
-   - Categories
-   - About
-4. Use the search and filter options to find specific news.
-5. Open a published article to read the complete news.
-6. To submit news, select **Submit News**.
-7. If not logged in, the system redirects to the User Login page.
+1. **Visit Homepage**: Browse public stories freely.
+2. **Click "Submit News"**: Redirected to Login if not authenticated.
+3. **Register**: Provide name, email, password.
+4. **Verify OTP**: Enter the 6-digit code delivered to your email inbox.
+5. **Dashboard**: Navigate to `User Dashboard` -> `Submit News`.
+6. **Fill Incident Form**: Add title, category, date, bullet points, photos, or videos.
+7. **Submit for AI Processing**: Gemini analyzes the report and creates a structured draft.
+8. **Track in My News**: Monitor review progress. If the editor requests clarification, click "Provide Info" to submit amendments.
 
 ---
 
-### For Registered Users
+## 11. Admin Workflow
 
-1. Register a new account.
-2. Login using your registered email and password.
-3. Open the **User Dashboard**.
-4. Select **Submit News**.
-5. Enter the incident and supporting information.
-6. Upload an image or video if required.
-7. Submit the news.
-8. Wait for AI processing.
-9. View the generated draft and current status from **My News**.
-10. If the administrator requests additional information, open the relevant news.
-11. Provide the requested information.
-12. Submit the additional information for AI regeneration.
-13. Track the updated status until the administrator completes the review.
+1. **Login**: Navigate to `/admin/login`.
+2. **Admin Dashboard**: View count widgets and categorized queues (Pending, Approved, Published).
+3. **Review News**:
+   - Compare user inputs and AI drafts.
+   - Choose: **Approve**, **Request Information**, or **Reject**.
+4. **Edit Draft**: Tweak headline, summary, article, key facts, tags, breaking, and featured switches.
+5. **Publish**: Click "Publish News" to make the story live on the public newspaper.
+6. **Audit Trail**: Review historical actions taken on all news items.
 
 ---
 
-### For Administrators
+## 12. AI Drafting Workflow
 
-1. Open the **Admin Login** page.
-2. Login using administrator credentials.
-3. Open the **Admin Dashboard**.
-4. Select a submitted news article.
-5. Review the original submission and AI-generated draft.
-6. Edit the generated content if necessary.
-7. If information is insufficient, request additional information.
-8. Approve or reject the news.
-9. Publish approved news when it is ready.
-10. Optionally mark published news as:
-    - Breaking News
-    - Featured News
-11. Administrative actions are recorded in the audit trail.
+- Prompt templates enforce strict factual boundaries.
+- The model structures raw user notes into standard newspaper inverted-pyramid style.
+- Output includes: Headline, Subheading, Summary, Article Body, Key Facts Bullet Points, and Search Tags.
+- In case of API quota or network failure, the submission is preserved with status `AI_PROCESSING_FAILED` and can be retried without losing data.
 
 ---
 
-### News Publication Process
+## 13. Security Implementations
 
-```text
-User Submission
-      ↓
-AI Processing
-      ↓
-AI Draft
-      ↓
-Admin Review
-      ↓
-┌───────────────┬────────────────────┐
-│               │                    │
-Approve       Request Info         Reject
-│               │                    │
-↓               ↓                    ↓
-Publish      User Response        Rejected
-│               │
-↓               ↓
-Public News   AI Regeneration
-                  │
-                  ↓
-             Admin Review
-
-## Project Status
-
-AI-NewsGen Copilot has completed the core application development and major testing phases.
-
-### Completed Components
-
-- Public digital newspaper interface
-- User registration and authentication
-- Administrator authentication
-- Role-based access control
-- User dashboard
-- News submission system
-- Image and video upload
-- AI-powered news generation
-- AI-generated headline, subheading, summary, article, key facts, and tags
-- User news status tracking
-- Additional information request workflow
-- AI news regeneration
-- Admin review system
-- Admin news editing
-- News approval and rejection
-- News publication
-- Breaking news functionality
-- Featured news functionality
-- News search and filtering
-- Category-based news browsing
-- Audit trail
-- CSRF protection
-- Input validation
-- File upload validation
-- XSS protection
-- Responsive user interface
-- Error and edge-case handling
-- MySQL database integration
+- **Role-Based Access Control (RBAC)**: Strict server-side validation on every route.
+- **CSRF Protection**: Token validation on all state-changing `POST` requests via Flask-WTF.
+- **Password Security**: Bcrypt / pbkdf2 password hashing via `werkzeug.security`.
+- **OTP Security**: Hashed storage (`generate_password_hash`), 10-minute expiry, max 5 attempts, 60-second resend cooldown, zero frontend exposure.
+- **File Upload Protection**: Controlled storage path, extension whitelisting, UUID filename generation, size limits (10MB image, 100MB video).
+- **Injection Defense**: SQLAlchemy parameterized queries protect against SQL injection. Jinja2 auto-escaping prevents XSS.
+- **Safe Redirects**: Protection against open redirect attacks via host validation.
 
 ---
 
-## Conclusion
+## 14. Testing & Quality Assurance
 
-AI-NewsGen Copilot demonstrates how Artificial Intelligence can be integrated with a web-based digital newspaper platform to assist in the news drafting process.
+Run the automated test suite:
 
-The system provides a controlled workflow where users submit incident information, the LLM generates a structured draft, and administrators review and manage the content before publication.
+```bash
+# Run comprehensive unit and integration tests
+python tests/test_comprehensive.py
 
-The project combines web development, database management, AI/LLM integration, authentication, security, and administrative moderation into a single application.
+# Run standalone LLM generation test
+python tests/test_llm.py
+```
 
-The human-in-the-loop approach ensures that AI-generated content is not automatically published without administrative review.
+### Test Coverage Highlights:
+- ✅ Public homepage, category, date, and keyword search/filtering.
+- ✅ News detail view access control (published vs. 404 for draft/unpublished).
+- ✅ User registration, OTP generation, verification, and rate limiting.
+- ✅ Role-based access control (User vs. Admin vs. Logged out).
+- ✅ Full news submission, draft saving, and administrative approval/publishing.
+- ✅ Upload security restrictions and extension filtering.
+- ✅ Custom error handlers (400, 403, 404, 405, 413, 500).
 
 ---
 
-## Author
+## 15. Limitations
 
-**AI-NewsGen Copilot**
+- **Video Processing**: Videos are stored and streamed directly without asynchronous cloud transcoding.
+- **SMTP Dependency**: OTP email delivery requires valid Gmail SMTP credentials or internet access.
+- **AI Latency**: Gemini API drafting takes 2–4 seconds depending on network latency.
 
-Developed as an academic/final-year project demonstrating the integration of Artificial Intelligence with a digital news management platform.
-=======
-# AI-News-Gen-copilot
-This is my first college project
->>>>>>> a3760bb3cf94f999d7fe33477db81095e8c0e8d3
+---
+
+## 16. Future Scope
+
+- Asynchronous background task queue (Celery + Redis) for large video processing.
+- Multi-language news translation and audio narration using Text-to-Speech (TTS).
+- Real-time notification badges for users when their news is published or needs info.
+- Social sharing and reader engagement analytics.
+
+---
+
+## 17. Project Status
+
+- **Status**: Stable, Production-Ready, Fully Tested.
+- **Verification**: All routes, database relations, AI flows, and security policies verified.
+
+---
+
+## 18. Author Information
+
+- **Project Lead**: Jisu Kumar Thakur
+- **Repository**: [AI-News-Gen-copilot](https://github.com/Jisu2006/AI-News-Gen-copilot)
+- **License**: MIT

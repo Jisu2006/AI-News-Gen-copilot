@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Admin Login - AI-NewsGen Copilot</title>
+    <title>Admin Login - Gen-AI Content Copilot</title>
 
 
     <!-- Bootstrap 5 -->
@@ -45,39 +45,7 @@
 <!-- ==================================================
      NAVBAR
      ================================================== -->
-
-<nav class="navbar app-navbar">
-
-    <div class="container">
-
-        <a
-            class="navbar-brand d-flex align-items-center gap-2"
-            href="{{ url_for('news.homepage') }}"
-        >
-
-            <i class="bi bi-newspaper"></i>
-
-            <span>
-                AI-NewsGen Copilot
-            </span>
-
-        </a>
-
-
-        <a
-            href="{{ url_for('news.homepage') }}"
-            class="nav-link"
-        >
-
-            <i class="bi bi-house-door me-1"></i>
-
-            Newspaper
-
-        </a>
-
-    </div>
-
-</nav>
+{% include 'includes/navbar.html' %}
 
 
 <!-- ==================================================
@@ -314,7 +282,7 @@
 
             <p class="app-footer-text mb-0">
 
-                © 2026 AI-NewsGen Copilot
+                © 2026 Gen-AI Content Copilot
 
             </p>
 

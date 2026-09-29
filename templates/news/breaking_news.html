@@ -10,7 +10,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Breaking News - AI-NewsGen Copilot</title>
+    <title>Breaking News - Gen-AI Content Copilot</title>
 
     <!-- Bootstrap 5 -->
     <link
@@ -37,171 +37,11 @@
 
 
     <!-- =====================================================
-         NAVIGATION
+    <!-- =====================================================
+         NAVIGATION & FLASH NOTIFICATIONS
     ====================================================== -->
-
-    <nav class="navbar navbar-expand-lg app-navbar sticky-top">
-
-        <div class="container">
-
-            <!-- Brand -->
-
-            <a
-                class="navbar-brand d-flex align-items-center gap-2"
-                href="{{ url_for('news.homepage') }}"
-            >
-
-                <i class="bi bi-newspaper"></i>
-
-                <span>
-                    AI-NewsGen Copilot
-                </span>
-
-            </a>
-
-
-            <!-- Mobile Menu Button -->
-
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
-
-                <span class="navbar-toggler-icon"></span>
-
-            </button>
-
-
-            <!-- Navigation Links -->
-
-            <div
-                class="collapse navbar-collapse"
-                id="mainNavbar"
-            >
-
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-
-
-                    <!-- Home -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.homepage') }}"
-                        >
-
-                            <i class="bi bi-house-door me-1"></i>
-
-                            Home
-
-                        </a>
-
-                    </li>
-
-
-                    <!-- Latest News -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.latest_news_page') }}#latest-news"
-                        >
-
-                            <i class="bi bi-clock-history me-1"></i>
-
-                            Latest News
-
-                        </a>
-
-                    </li>
-
-
-                    <!-- Breaking News -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link active"
-                            aria-current="page"
-                            href="{{ url_for('news.breaking_news_page') }}"
-                        >
-
-                            <i class="bi bi-lightning-charge-fill me-1"></i>
-
-                            Breaking News
-
-                        </a>
-
-                    </li>
-
-
-                    <!-- Featured News -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.featured_news_page') }}"
-                        >
-
-                            <i class="bi bi-star me-1"></i>
-
-                            Featured News
-
-                        </a>
-
-                    </li>
-
-
-                    <!-- Categories -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.categories_page') }}"
-                        >
-
-                            <i class="bi bi-grid me-1"></i>
-
-                            Categories
-
-                        </a>
-
-                    </li>
-
-
-                    <!-- About -->
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.about_page') }}"
-                        >
-
-                            <i class="bi bi-info-circle me-1"></i>
-
-                            About
-
-                        </a>
-
-                    </li>
-
-                </ul>
-
-            </div>
-
-        </div>
-
-    </nav>
+    {% include 'includes/navbar.html' %}
+    {% include 'includes/flash_messages.html' %}
 
 
 
@@ -562,7 +402,7 @@
 
                         <i class="bi bi-newspaper me-1"></i>
 
-                        AI-NewsGen Copilot
+                        Gen-AI Content Copilot
 
                     </p>
 
@@ -580,7 +420,7 @@
 
                     <p class="app-footer-text mb-0">
 
-                        © 2026 AI-NewsGen Copilot
+                        © 2026 Gen-AI Content Copilot
 
                     </p>
 

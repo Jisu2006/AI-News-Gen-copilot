@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>About - AI-NewsGen Copilot</title>
+    <title>About - Gen-AI Content Copilot</title>
 
     <!-- Bootstrap -->
     <link
@@ -27,106 +27,9 @@
 
 <body>
 
-    <!-- NAVIGATION -->
-    <nav class="navbar navbar-expand-lg app-navbar sticky-top">
-
-        <div class="container">
-
-            <a
-                class="navbar-brand d-flex align-items-center gap-2"
-                href="{{ url_for('news.homepage') }}"
-            >
-                <i class="bi bi-newspaper"></i>
-                <span>AI-NewsGen Copilot</span>
-            </a>
-
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
-                <span class="navbar-toggler-icon"></span>
-            </button>
-
-            <div
-                class="collapse navbar-collapse"
-                id="mainNavbar"
-            >
-
-                <ul class="navbar-nav ms-auto align-items-lg-center gap-lg-2">
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.homepage') }}"
-                        >
-                            <i class="bi bi-house-door me-1"></i>
-                            Home
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.latest_news_page') }}#latest-news"
-                        >
-                            <i class="bi bi-clock-history me-1"></i>
-                            Latest News
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.breaking_news_page') }}"
-                        >
-                            <i class="bi bi-lightning-charge me-1"></i>
-                            Breaking News
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.featured_news_page') }}"
-                        >
-                            <i class="bi bi-star me-1"></i>
-                            Featured News
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link"
-                            href="{{ url_for('news.categories_page') }}"
-                        >
-                            <i class="bi bi-grid-fill me-1"></i>
-                            Categories
-                        </a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a
-                            class="nav-link active"
-                            aria-current="page"
-                            href="{{ url_for('news.about_page') }}"
-                        >
-                            <i class="bi bi-info-circle me-1"></i>
-                            About
-                        </a>
-                    </li>
-
-                </ul>
-
-            </div>
-
-        </div>
-
-    </nav>
+    <!-- NAVIGATION & FLASH NOTIFICATIONS -->
+    {% include 'includes/navbar.html' %}
+    {% include 'includes/flash_messages.html' %}
 
 
     <!-- PAGE HEADER -->
@@ -146,7 +49,7 @@
                     </div>
 
                     <h1 class="display-5 mb-3">
-                        About AI-NewsGen Copilot
+                        About Gen-AI Content Copilot
                     </h1>
 
                     <p class="lead mb-0">
@@ -180,7 +83,7 @@
 
                         <div>
                             <h2 class="section-heading h3 mb-1">
-                                About AI-NewsGen Copilot
+                                About Gen-AI Content Copilot
                             </h2>
 
                             <p class="section-subheading mb-0">
@@ -191,7 +94,7 @@
                     </div>
 
                     <p class="mb-3">
-                        AI-NewsGen Copilot is an AI-powered digital newspaper
+                        Gen-AI Content Copilot is an AI-powered digital newspaper
                         platform designed to help users submit news information
                         and generate structured news drafts using artificial
                         intelligence.
@@ -432,7 +335,7 @@
                     </div>
 
                     <p class="mb-0">
-                        The main purpose of AI-NewsGen Copilot is to simplify
+                        The main purpose of Gen-AI Content Copilot is to simplify
                         the process of converting user-provided incident
                         information into a readable and structured news draft,
                         while keeping administrator review as an important
@@ -459,7 +362,7 @@
 
                     <p class="app-footer-title mb-1">
                         <i class="bi bi-newspaper me-1"></i>
-                        AI-NewsGen Copilot
+                        Gen-AI Content Copilot
                     </p>
 
                     <p class="app-footer-text mb-0">
@@ -471,7 +374,7 @@
                 <div class="col-12 col-md-6 text-md-end">
 
                     <p class="app-footer-text mb-0">
-                        © 2026 AI-NewsGen Copilot
+                        © 2026 Gen-AI Content Copilot
                     </p>
 
                 </div>

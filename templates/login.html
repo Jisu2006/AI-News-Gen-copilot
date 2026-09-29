@@ -1,43 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Login - AI-NewsGen Copilot</title>
+    <meta http-equiv="refresh" content="0; url={{ url_for('auth.user_login') }}">
+    <title>Redirecting to Login...</title>
 </head>
-
 <body>
-
-    <h1>AI-NewsGen Copilot</h1>
-
-    <h2>Login</h2>
-
-    <form method="POST">
-
-        <!-- CSRF Protection -->
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-
-        <label>Email</label>
-        <input type="email" name="email" required>
-
-        <br><br>
-
-        <label>Password</label>
-        <input type="password" name="password" required>
-
-        <br><br>
-
-        <button type="submit">Login</button>
-
-    </form>
-
-    <p>
-        Don't have an account?
-        <a href="/register">Register</a>
-    </p>
-
+    <p>Redirecting to <a href="{{ url_for('auth.user_login') }}">User Login</a>...</p>
 </body>
-
 </html>

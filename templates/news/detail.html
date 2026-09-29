@@ -1,518 +1,751 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
     <meta charset="UTF-8">
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>{{ news.final_headline or news.ai_headline or news.title }} - Gen-AI Content Copilot</title>
 
-    <title>
-        {{ news.final_headline or news.ai_headline or news.title }}
-        - AI-NewsGen Copilot
-    </title>
-
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Application CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
     <style>
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
+        .article-main-container {
+            max-width: 920px;
         }
-
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            color: #222;
+        .article-detail-card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06);
         }
-
-        header {
-            background: #111;
-            color: white;
-            text-align: center;
-            padding: 25px;
+        .article-breadcrumb .breadcrumb-item + .breadcrumb-item::before {
+            content: "›";
+            font-size: 1.1rem;
+            line-height: 1;
+            vertical-align: middle;
+            color: #94a3b8;
         }
-
-        header h1 {
-            font-size: 34px;
-            margin-bottom: 8px;
+        .article-category-badge {
+            font-size: 0.8rem;
+            letter-spacing: 0.06em;
+            font-weight: 700;
         }
-
-        header p {
-            color: #ccc;
-        }
-
-        nav {
-            background: white;
-            padding: 15px;
-            text-align: center;
-            border-bottom: 1px solid #ddd;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #222;
-            font-weight: bold;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 35px auto;
-            padding: 0 20px;
-        }
-
-        .article {
-            background: white;
-            padding: 35px;
-            border-radius: 8px;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
-        }
-
-        .category {
-            display: inline-block;
-            background: #111;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 4px;
-            font-size: 13px;
-            margin-bottom: 15px;
-        }
-
-        .article h2 {
-            font-size: 38px;
+        .article-headline {
+            color: #0f172a;
+            font-weight: 800;
+            letter-spacing: -0.025em;
             line-height: 1.25;
-            margin-bottom: 15px;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
-
-        .subheading {
-            font-size: 19px;
-            color: #666;
-            line-height: 1.5;
-            margin-bottom: 20px;
+        .article-summary-lead {
+            color: #475569;
+            font-size: 1.15rem;
+            line-height: 1.65;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
-
-        .meta {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 25px;
+        .article-meta-bar {
+            color: #64748b;
+            border-top: 1px solid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
         }
-
-        .article-image {
+        .article-featured-image {
             width: 100%;
-            max-height: 450px;
+            max-height: 520px;
             object-fit: cover;
-            border-radius: 6px;
-            margin-bottom: 25px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
         }
-
-        .article-video {
+        .article-video-player {
             width: 100%;
             max-height: 500px;
-            border-radius: 6px;
-            margin-bottom: 25px;
+            border-radius: 12px;
             background: #000;
+            border: 1px solid #e2e8f0;
         }
-
-        .media-section {
-            margin-bottom: 25px;
+        .article-highlights-card {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-left: 4px solid #2563eb;
+            border-radius: 12px;
         }
-
-        .media-title {
-            font-size: 16px;
-            font-weight: bold;
-            margin-bottom: 10px;
+        .article-highlights-list {
+            padding-left: 1.25rem;
         }
-
-        .media-link {
-            display: inline-block;
-            margin-top: 8px;
-            color: #111;
-            font-weight: bold;
-            text-decoration: underline;
-        }
-
-        .summary {
-            font-size: 18px;
+        .article-highlights-list li {
+            margin-bottom: 0.5rem;
+            color: #334155;
             line-height: 1.7;
-            margin-bottom: 30px;
         }
-
-        .section {
-            margin-top: 30px;
+        .article-highlights-list li:last-child {
+            margin-bottom: 0;
         }
-
-        .section h3 {
-            border-bottom: 2px solid #111;
-            padding-bottom: 8px;
-            margin-bottom: 15px;
+        .article-full-content h2 {
+            color: #0f172a;
+            font-weight: 700;
+            font-size: 1.35rem;
         }
-
-        .article-text {
-            font-size: 17px;
-            line-height: 1.8;
+        .article-body-text {
+            font-size: 1.125rem;
+            line-height: 1.9;
+            color: #1e293b;
             white-space: pre-line;
+            word-break: break-word;
+            overflow-wrap: break-word;
         }
-
-        .facts {
-            padding-left: 25px;
+        .related-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background: #ffffff;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
-
-        .facts li {
-            margin-bottom: 10px;
-            line-height: 1.6;
+        .related-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
         }
-
-        .tags {
-            margin-top: 15px;
+        .related-thumb {
+            height: 150px;
+            object-fit: cover;
+            width: 100%;
         }
-
-        .tag {
-            display: inline-block;
-            background: #eee;
-            padding: 6px 10px;
-            margin: 4px;
-            border-radius: 4px;
-            font-size: 13px;
+        .comment-item {
+            transition: background-color 0.2s ease;
         }
-
-        .source-box {
-            margin-top: 30px;
-            padding: 18px;
-            background: #f7f7f7;
-            border-left: 4px solid #111;
+        .comment-item:hover {
+            background-color: #f8fafc !important;
         }
-
-        .source-box a {
-            color: #111;
-            word-break: break-all;
-        }
-
-        .back-button {
-            display: inline-block;
-            margin-top: 30px;
-            text-decoration: none;
-            background: #111;
-            color: white;
-            padding: 10px 18px;
-            border-radius: 5px;
-        }
-
-        footer {
-            margin-top: 40px;
-            background: #111;
-            color: white;
-            text-align: center;
-            padding: 25px;
-        }
-
-        @media (max-width: 600px) {
-
-            .article {
-                padding: 20px;
-            }
-
-            .article h2 {
-                font-size: 28px;
-            }
-
-            .article-video {
-                max-height: 300px;
-            }
-
-        }
-
     </style>
-
 </head>
 
+<body class="bg-app d-flex flex-column min-vh-100">
 
-<body>
+    <!-- =====================================================
+         NAVIGATION & FLASH NOTIFICATIONS
+    ====================================================== -->
+    {% include 'includes/navbar.html' %}
+    {% include 'includes/flash_messages.html' %}
 
-
-    <!-- HEADER -->
-
-    <header>
-
-        <h1>AI-NewsGen Copilot</h1>
-
-        <p>AI-Powered Digital Newspaper</p>
-
-    </header>
-
-
-    <!-- NAVIGATION -->
-
-    <nav>
-
-        <a href="/">
-            ← Back to Home
-        </a>
-
-    </nav>
-
-
-    <!-- ARTICLE -->
-
-    <main class="container">
-
-        <article class="article">
-
-
-            <!-- CATEGORY -->
-
-            <span class="category">
-                {{ news.category }}
-            </span>
-
-
-            <!-- HEADLINE -->
-
-            <h2>
-                {{ news.final_headline
-                   or news.ai_headline
-                   or news.title }}
-            </h2>
-
-
-            <!-- SUBHEADING -->
-
-            {% if news.final_subheading or news.ai_subheading %}
-
-                <p class="subheading">
-
-                    {{ news.final_subheading
-                       or news.ai_subheading }}
-
-                </p>
-
-            {% endif %}
-
-
-            <!-- META INFORMATION -->
-
-            <div class="meta">
-
-                📍 {{ news.location or "Location not provided" }}
-
-                {% if news.incident_date %}
-                    | 📅 {{ news.incident_date }}
-                {% endif %}
-
-                {% if news.incident_time %}
-                    | ⏰ {{ news.incident_time }}
-                {% endif %}
-
-                {% if news.published_at %}
-                    | 📰 Published {{ news.published_at }}
-                {% endif %}
-
+    <!-- Copy Link Toast Notification -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1080;">
+        <div id="copyToast" class="toast align-items-center text-bg-dark border-0" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body d-flex align-items-center gap-2">
+                    <i class="bi bi-check-circle-fill text-success fs-6"></i>
+                    <span>Article link copied to clipboard!</span>
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
             </div>
+        </div>
+    </div>
 
+    <!-- =====================================================
+         ARTICLE CONTENT
+    ====================================================== -->
+    <main class="container py-4 py-md-5 flex-grow-1">
+        <div class="row justify-content-center">
+            <div class="col-12 article-main-container">
 
-            <!-- IMAGE -->
+                <!-- 1. Breadcrumb -->
+                <nav aria-label="breadcrumb" class="article-breadcrumb mb-4">
+                    <ol class="breadcrumb mb-0 align-items-center">
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('news.homepage') }}" class="text-decoration-none text-muted">
+                                <i class="bi bi-house-door me-1"></i>Home
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item">
+                            <a href="{{ url_for('news.latest_news_page') }}" class="text-decoration-none text-muted">
+                                News
+                            </a>
+                        </li>
+                        <li class="breadcrumb-item active text-truncate" style="max-width: 380px;" aria-current="page">
+                            {{ news.final_headline or news.ai_headline or news.title }}
+                        </li>
+                    </ol>
+                </nav>
 
-            {% if news.image_path %}
+                <article class="article-detail-card p-4 p-md-5">
 
-                <div class="media-section">
-
-                    <div class="media-title">
-                        🖼️ News Image
-                    </div>
-
-                    <img
-                        src="{{ url_for('static', filename=news.image_path) }}"
-                        alt="News Image"
-                        class="article-image"
-                    >
-
-                    <a
-                        href="{{ url_for('static', filename=news.image_path) }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="media-link"
-                    >
-                        Open Image in New Tab
-                    </a>
-
-                </div>
-
-            {% endif %}
-
-
-            <!-- VIDEO -->
-
-            {% if news.video_path %}
-
-                <div class="media-section">
-
-                    <div class="media-title">
-                        🎥 News Video
-                    </div>
-
-                    <video
-                        class="article-video"
-                        controls
-                        preload="metadata"
-                    >
-
-                        <source
-                            src="{{ url_for('static', filename=news.video_path) }}"
-                        >
-
-                        Your browser does not support video playback.
-
-                    </video>
-
-                    <br>
-
-                    <a
-                        href="{{ url_for('static', filename=news.video_path) }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="media-link"
-                    >
-                        Open Video in New Tab
-                    </a>
-
-                </div>
-
-            {% endif %}
-
-
-            <!-- SUMMARY -->
-
-            <div class="section">
-
-                <h3>Summary</h3>
-
-                <p class="summary">
-
-                    {{ news.final_summary
-                       or news.ai_summary
-                       or "No summary available." }}
-
-                </p>
-
-            </div>
-
-
-            <!-- KEY FACTS -->
-
-            {% if news.key_facts %}
-
-                <div class="section">
-
-                    <h3>Key Facts</h3>
-
-                    <ul class="facts">
-
-                        {% for fact in news.key_facts|from_json %}
-
-                            <li>
-                                {{ fact }}
-                            </li>
-
-                        {% endfor %}
-
-                    </ul>
-
-                </div>
-
-            {% endif %}
-
-
-            <!-- FULL ARTICLE -->
-
-            <div class="section">
-
-                <h3>Full Article</h3>
-
-                <div class="article-text">
-
-                    {{ news.final_article
-                       or news.ai_article
-                       or "Article content not available." }}
-
-                </div>
-
-            </div>
-
-
-            <!-- TAGS -->
-
-            {% if news.tags %}
-
-                <div class="section">
-
-                    <h3>Tags</h3>
-
-                    <div class="tags">
-
-                        {% for tag in news.tags|from_json %}
-
-                            <span class="tag">
-                                #{{ tag }}
+                    <!-- 2. Category -->
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-2 text-uppercase article-category-badge">
+                            {{ news.category }}
+                        </span>
+                        {% if news.is_breaking %}
+                            <span class="badge bg-danger text-white px-3 py-2 fw-semibold" style="font-size: 0.8rem;">
+                                <i class="bi bi-lightning-charge-fill me-1"></i>Breaking
                             </span>
-
-                        {% endfor %}
-
+                        {% endif %}
+                        {% if news.is_featured %}
+                            <span class="badge bg-warning text-dark px-3 py-2 fw-semibold" style="font-size: 0.8rem;">
+                                <i class="bi bi-star-fill me-1"></i>Featured
+                            </span>
+                        {% endif %}
                     </div>
 
-                </div>
+                    <!-- 3. Main Headline -->
+                    <h1 class="article-headline display-5 mb-3">
+                        {{ news.final_headline or news.ai_headline or news.title }}
+                    </h1>
 
-            {% endif %}
+                    <!-- 4. Short Summary -->
+                    {% if news.final_summary or news.ai_summary or news.final_subheading or news.ai_subheading %}
+                        <p class="article-summary-lead mb-4">
+                            {{ news.final_summary or news.ai_summary or news.final_subheading or news.ai_subheading }}
+                        </p>
+                    {% endif %}
 
+                    <!-- 5. Article Metadata -->
+                    <div class="article-meta-bar d-flex flex-wrap align-items-center gap-2 py-3 mb-4">
+                        {% if news.user and news.user.name %}
+                            <span class="fw-semibold text-dark d-flex align-items-center">
+                                <i class="bi bi-person-circle text-primary me-1"></i>By {{ news.user.name }}
+                            </span>
+                        {% endif %}
 
-            <!-- SOURCE URL -->
+                        {% if news.published_at %}
+                            {% if news.user and news.user.name %}<span class="text-muted opacity-50">&bull;</span>{% endif %}
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-calendar3 text-primary me-1"></i>
+                                Published on {{ news.published_at.strftime('%B %d, %Y') }}{% if news.published_at.strftime('%I:%M %p') != '12:00 AM' %} at {{ news.published_at.strftime('%I:%M %p') }}{% endif %}
+                            </span>
+                        {% elif news.created_at %}
+                            {% if news.user and news.user.name %}<span class="text-muted opacity-50">&bull;</span>{% endif %}
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-calendar3 text-primary me-1"></i>
+                                Published on {{ news.created_at.strftime('%B %d, %Y') }}
+                            </span>
+                        {% endif %}
 
-            {% if news.source_url %}
+                        {% if news.location %}
+                            <span class="text-muted opacity-50">&bull;</span>
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ news.location }}
+                            </span>
+                        {% endif %}
 
-                <div class="source-box">
+                        {% if news.incident_date %}
+                            <span class="text-muted opacity-50">&bull;</span>
+                            <span class="d-flex align-items-center">
+                                <i class="bi bi-clock-history text-secondary me-1"></i>Incident: {{ news.incident_date.strftime('%Y-%m-%d') }}
+                            </span>
+                        {% endif %}
+                    </div>
 
-                    <strong>🔗 Source:</strong>
+                    <!-- 6. Featured News Image -->
+                    {% if news.image_path %}
+                        <div class="mb-4">
+                            <img
+                                src="{{ url_for('static', filename=news.image_path) }}"
+                                alt="{{ news.final_headline or news.ai_headline or news.title }}"
+                                class="article-featured-image img-fluid"
+                            >
+                        </div>
+                    {% endif %}
 
-                    <br>
+                    {% if news.video_path %}
+                        <div class="mb-4">
+                            <video controls class="article-video-player">
+                                <source src="{{ url_for('static', filename=news.video_path) }}">
+                                Your browser does not support the video tag.
+                            </video>
+                        </div>
+                    {% endif %}
 
-                    <a
-                        href="{{ news.source_url }}"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                    >
-                        {{ news.source_url }}
-                    </a>
+                    <!-- 7. Key Highlights -->
+                    {% set raw_facts = news.key_facts | from_json %}
+                    {% set highlights = [] %}
+                    {% if raw_facts and raw_facts is iterable and raw_facts is not string %}
+                        {% for item in raw_facts %}
+                            {% if item is string and item.strip() %}
+                                {% set _ = highlights.append(item.strip()) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% elif news.bullet_points %}
+                        {% for line in news.bullet_points.splitlines() %}
+                            {% set clean_line = line | replace('\r', '') | trim %}
+                            {% if clean_line %}
+                                {% set _ = highlights.append(clean_line | replace('^- ', '') | replace('^• ', '') | trim) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
 
-                </div>
+                    {% if highlights and highlights|length > 0 %}
+                        <div class="article-highlights-card p-4 mb-4">
+                            <h2 class="h5 fw-bold mb-3 d-flex align-items-center" style="color: #0f172a;">
+                                <i class="bi bi-list-check text-primary me-2 fs-5"></i>Key Highlights
+                            </h2>
+                            <ul class="article-highlights-list mb-0">
+                                {% for point in highlights %}
+                                    <li>{{ point }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
 
-            {% endif %}
+                    <!-- 8. Full News Article -->
+                    <section class="article-full-content mb-4">
+                        <h2 class="h4 fw-bold mb-3 pb-2 border-bottom" style="border-color: #e2e8f0 !important;">
+                            Full News Article
+                        </h2>
+                        <div class="article-body-text mb-4">
+                            {{ news.final_article or news.ai_article or news.additional_description }}
+                        </div>
+                    </section>
 
+                    <!-- Source Citation (if available) -->
+                    {% if news.source_url %}
+                        <div class="mb-4 p-3 bg-light rounded-3 text-muted small border" style="border-color: #e2e8f0 !important;">
+                            <i class="bi bi-link-45deg me-1"></i>
+                            <strong>Source:</strong>
+                            <a href="{{ news.source_url }}" target="_blank" rel="noopener noreferrer" class="text-primary text-decoration-none" style="word-break: break-all;">
+                                {{ news.source_url }}
+                            </a>
+                        </div>
+                    {% endif %}
 
-            <!-- BACK BUTTON -->
+                    <!-- =====================================================
+                         ENGAGEMENT ACTIONS (Like, Views, Share)
+                    ====================================================== -->
+                    <div class="article-engagement-bar d-flex flex-wrap align-items-center justify-content-between gap-3 py-3 my-4 border-top border-bottom" style="border-color: #e2e8f0 !important;">
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <!-- 1. Like Button -->
+                            <button
+                                type="button"
+                                id="likeBtn"
+                                class="btn {% if user_liked %}btn-danger text-white{% else %}btn-outline-danger{% endif %} btn-sm rounded-pill d-inline-flex align-items-center gap-2 px-3 py-2 fw-semibold"
+                                data-news-id="{{ news.id }}"
+                                data-liked="{% if user_liked %}true{% else %}false{% endif %}"
+                            >
+                                <i class="bi {% if user_liked %}bi-heart-fill{% else %}bi-heart{% endif %}" id="likeIcon"></i>
+                                <span><span id="likeCount">{{ likes_count }}</span> <span id="likeText">{% if likes_count == 1 %}Like{% else %}Likes{% endif %}</span></span>
+                            </button>
 
-            <a href="/" class="back-button">
-                ← Back to News
-            </a>
+                            <!-- 4. View Counter -->
+                            <div class="d-inline-flex align-items-center gap-2 text-muted px-3 py-2 rounded-pill bg-light border" style="font-size: 0.875rem; border-color: #e2e8f0 !important;">
+                                <i class="bi bi-eye-fill text-secondary"></i>
+                                <span><strong>{{ news.views_count or 0 }}</strong> Views</span>
+                            </div>
+                        </div>
 
+                        <!-- 2. Share Dropdown -->
+                        <div class="dropdown">
+                            <button
+                                class="btn btn-outline-secondary btn-sm rounded-pill d-inline-flex align-items-center gap-2 px-3 py-2 dropdown-toggle fw-semibold"
+                                type="button"
+                                id="shareDropdown"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <i class="bi bi-share-fill text-primary"></i> <span>Share</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border p-2" aria-labelledby="shareDropdown" style="min-width: 200px; border-radius: 12px; border-color: #e2e8f0 !important;">
+                                <li>
+                                    <button class="dropdown-item rounded py-2 d-flex align-items-center gap-2" type="button" id="copyLinkBtn">
+                                        <i class="bi bi-link-45deg text-secondary fs-5"></i> <span>Copy Link</span>
+                                    </button>
+                                </li>
+                                <li><hr class="dropdown-divider my-1" style="border-color: #f1f5f9;"></li>
+                                <li>
+                                    <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="https://api.whatsapp.com/send?text={{ (news.final_headline or news.ai_headline or news.title)|urlencode }}%20{{ request.url|urlencode }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="bi bi-whatsapp text-success fs-6"></i> <span>WhatsApp</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="https://twitter.com/intent/tweet?text={{ (news.final_headline or news.ai_headline or news.title)|urlencode }}&url={{ request.url|urlencode }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="bi bi-twitter-x text-dark fs-6"></i> <span>X / Twitter</span>
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item rounded py-2 d-flex align-items-center gap-2" href="https://www.linkedin.com/sharing/share-offsite/?url={{ request.url|urlencode }}" target="_blank" rel="noopener noreferrer">
+                                        <i class="bi bi-linkedin text-primary fs-6"></i> <span>LinkedIn</span>
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
 
-        </article>
+                    <!-- =====================================================
+                         3. COMMENTS SECTION
+                    ====================================================== -->
+                    <section class="article-comments-section mb-5" id="commentsSection">
+                        <h2 class="h5 fw-bold mb-4 d-flex align-items-center gap-2" style="color: #0f172a;">
+                            <i class="bi bi-chat-left-text text-primary"></i>
+                            <span>Comments (<span id="commentsCount">{{ comments|length }}</span>)</span>
+                        </h2>
 
+                        <!-- Comment Form / Login Prompt -->
+                        {% if session.get('user_id') %}
+                            <form id="commentForm" method="POST" action="{{ url_for('news.post_comment', news_id=news.id) }}" class="mb-4">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <div class="mb-3">
+                                    <textarea
+                                        id="commentInput"
+                                        name="comment_text"
+                                        class="form-control"
+                                        rows="3"
+                                        placeholder="Write a comment..."
+                                        maxlength="2000"
+                                        required
+                                        style="border-radius: 10px; border-color: #cbd5e1;"
+                                    ></textarea>
+                                    <div class="invalid-feedback" id="commentError">Please enter a valid comment.</div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <button type="submit" id="submitCommentBtn" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold">
+                                        <span id="commentBtnText">Post Comment</span>
+                                        <span id="commentBtnSpinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </div>
+                            </form>
+                        {% else %}
+                            <div class="p-4 bg-light rounded-3 text-center border mb-4" style="border-color: #e2e8f0 !important;">
+                                <p class="mb-2 text-secondary fw-semibold">Have something to say? Log in to leave a comment.</p>
+                                <a href="{{ url_for('auth.user_login') }}" class="btn btn-primary btn-sm rounded-pill px-4 fw-semibold">
+                                    <i class="bi bi-box-arrow-in-right me-1"></i>Log In to Comment
+                                </a>
+                            </div>
+                        {% endif %}
+
+                        <!-- Comment List -->
+                        <div id="commentsList" class="d-flex flex-column gap-3">
+                            {% if comments and comments|length > 0 %}
+                                {% for comment in comments %}
+                                    <div class="comment-item p-3 rounded-3 border bg-white shadow-none" style="border-color: #e2e8f0 !important;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="comment-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                                    {{ (comment.author.name if comment.author else 'User')[:1]|upper }}
+                                                </div>
+                                                <strong class="text-dark" style="font-size: 0.95rem;">
+                                                    {{ comment.author.name if comment.author else 'User' }}
+                                                </strong>
+                                            </div>
+                                            <small class="text-muted" style="font-size: 0.8rem;">
+                                                {{ comment.created_at.strftime('%d %b %Y, %I:%M %p') }}
+                                            </small>
+                                        </div>
+                                        <p class="mb-0 text-secondary" style="font-size: 0.95rem; line-height: 1.6; white-space: pre-line; word-break: break-word;">
+                                            {{ comment.comment_text }}
+                                        </p>
+                                    </div>
+                                {% endfor %}
+                            {% else %}
+                                <div id="noCommentsMsg" class="text-muted text-center py-4 border rounded-3 bg-light" style="border-color: #e2e8f0 !important;">
+                                    <i class="bi bi-chat-dots fs-3 opacity-50 d-block mb-1"></i>
+                                    <span>No comments yet. Be the first to share your thoughts!</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </section>
+
+                    <!-- 9. Tags -->
+                    {% set raw_tags = news.tags | from_json %}
+                    {% set tags_list = [] %}
+                    {% if raw_tags and raw_tags is iterable and raw_tags is not string %}
+                        {% for t in raw_tags %}
+                            {% if t is string and ',' in t %}
+                                {% for sub_t in t.split(',') %}
+                                    {% if sub_t.strip() %}
+                                        {% set _ = tags_list.append(sub_t.strip()) %}
+                                    {% endif %}
+                                {% endfor %}
+                            {% elif t is string and t.strip() %}
+                                {% set _ = tags_list.append(t.strip()) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% elif news.tags and news.tags is string %}
+                        {% for sub_t in news.tags.split(',') %}
+                            {% if sub_t.strip() %}
+                                {% set _ = tags_list.append(sub_t.strip()) %}
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+                    {% if tags_list and tags_list|length > 0 %}
+                        <div class="article-tags-wrapper pt-3 border-top mb-4" style="border-color: #e2e8f0 !important;">
+                            <h3 class="h6 fw-bold text-uppercase text-muted mb-3" style="letter-spacing: 0.05em; font-size: 0.8rem;">
+                                <i class="bi bi-tags-fill me-1"></i>Tags
+                            </h3>
+                            <div class="d-flex flex-wrap gap-2">
+                                {% for tag in tags_list %}
+                                    <span class="badge bg-light text-secondary border px-3 py-2 rounded-pill font-monospace" style="font-size: 0.85rem;"># {{ tag }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <!-- Back Navigation Button -->
+                    <div class="pt-3 border-top d-flex align-items-center" style="border-color: #e2e8f0 !important;">
+                        <a href="{{ url_for('news.homepage') }}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                            <i class="bi bi-arrow-left me-1"></i> Back to Home
+                        </a>
+                    </div>
+
+                </article>
+
+                <!-- 10. Related News Section -->
+                {% if related_news and related_news|length > 0 %}
+                    <section class="article-related-news mt-5 pt-4">
+                        <h2 class="h4 fw-bold mb-4" style="color: #0f172a;">Related News</h2>
+                        <div class="row g-3 g-md-4">
+                            {% for item in related_news %}
+                                <div class="col-12 col-sm-6 col-lg-3">
+                                    <div class="card h-100 related-card overflow-hidden shadow-none">
+                                        {% if item.image_path %}
+                                            <img
+                                                src="{{ url_for('static', filename=item.image_path) }}"
+                                                class="card-img-top related-thumb"
+                                                alt="{{ item.final_headline or item.ai_headline or item.title }}"
+                                            >
+                                        {% else %}
+                                            <div class="d-flex align-items-center justify-content-center bg-light" style="height: 120px; border-bottom: 1px solid #e2e8f0;">
+                                                <i class="bi bi-newspaper text-muted opacity-50 fs-2"></i>
+                                            </div>
+                                        {% endif %}
+                                        <div class="card-body p-3 d-flex flex-column">
+                                            <span class="badge bg-primary-subtle text-primary border border-primary-subtle text-uppercase mb-2 align-self-start" style="font-size: 0.7rem; font-weight: 700;">
+                                                {{ item.category }}
+                                            </span>
+                                            <h3 class="h6 card-title fw-bold mb-2 flex-grow-1" style="font-size: 0.95rem; line-height: 1.4;">
+                                                <a href="{{ url_for('news.news_detail', news_id=item.id) }}" class="text-dark text-decoration-none stretched-link">
+                                                    {{ (item.final_headline or item.ai_headline or item.title) | truncate(65) }}
+                                                </a>
+                                            </h3>
+                                            {% if item.published_at %}
+                                                <div class="text-muted small mt-auto" style="font-size: 0.75rem;">
+                                                    <i class="bi bi-calendar3 me-1"></i>{{ item.published_at.strftime('%b %d, %Y') }}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endif %}
+
+            </div>
+        </div>
     </main>
 
-
-    <!-- FOOTER -->
-
-    <footer>
-
-        <p>
-            © 2026 AI-NewsGen Copilot
-        </p>
-
-        <p>
-            AI-Powered Digital Newspaper Platform
-        </p>
-
+    <!-- Footer -->
+    <footer class="app-footer mt-auto py-4 border-top" style="border-color: #e2e8f0 !important; background: #ffffff;">
+        <div class="container text-center">
+            <p class="app-footer-text mb-0 text-muted small">© 2026 Gen-AI Content Copilot • Professional Digital Journalism Platform</p>
+        </div>
     </footer>
 
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Auto-dismiss alert after 5s
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
 
+        // =====================================================
+        // ENGAGEMENT JAVASCRIPT: LIKE, SHARE, COMMENT
+        // =====================================================
+        document.addEventListener('DOMContentLoaded', function() {
+            const newsId = "{{ news.id }}";
+            const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+            const csrfToken = csrfMeta ? csrfMeta.getAttribute('content') : '';
+
+            const likeBtn = document.getElementById('likeBtn');
+            const likeIcon = document.getElementById('likeIcon');
+            const likeCount = document.getElementById('likeCount');
+            const likeText = document.getElementById('likeText');
+            const copyLinkBtn = document.getElementById('copyLinkBtn');
+            const copyToastEl = document.getElementById('copyToast');
+            const commentForm = document.getElementById('commentForm');
+            const commentInput = document.getElementById('commentInput');
+            const submitCommentBtn = document.getElementById('submitCommentBtn');
+            const commentBtnText = document.getElementById('commentBtnText');
+            const commentBtnSpinner = document.getElementById('commentBtnSpinner');
+            const commentsList = document.getElementById('commentsList');
+            const commentsCount = document.getElementById('commentsCount');
+            const noCommentsMsg = document.getElementById('noCommentsMsg');
+
+            // 1. LIKE FEATURE
+            if (likeBtn) {
+                likeBtn.addEventListener('click', async function() {
+                    likeBtn.disabled = true;
+                    try {
+                        const response = await fetch(`/news/${newsId}/like`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': csrfToken
+                            }
+                        });
+
+                        if (response.status === 401) {
+                            const data = await response.json();
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                window.location.href = "{{ url_for('auth.user_login') }}";
+                            }
+                            return;
+                        }
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success) {
+                                if (data.liked) {
+                                    likeBtn.classList.remove('btn-outline-danger');
+                                    likeBtn.classList.add('btn-danger', 'text-white');
+                                    likeIcon.classList.remove('bi-heart');
+                                    likeIcon.classList.add('bi-heart-fill');
+                                    likeBtn.setAttribute('data-liked', 'true');
+                                } else {
+                                    likeBtn.classList.remove('btn-danger', 'text-white');
+                                    likeBtn.classList.add('btn-outline-danger');
+                                    likeIcon.classList.remove('bi-heart-fill');
+                                    likeIcon.classList.add('bi-heart');
+                                    likeBtn.setAttribute('data-liked', 'false');
+                                }
+                                likeCount.textContent = data.likes_count;
+                                likeText.textContent = data.likes_count === 1 ? 'Like' : 'Likes';
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error toggling like:', err);
+                    } finally {
+                        likeBtn.disabled = false;
+                    }
+                });
+            }
+
+            // 2. SHARE FEATURE: Copy Link & Native Share
+            if (copyLinkBtn) {
+                copyLinkBtn.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    try {
+                        if (navigator.clipboard && window.isSecureContext) {
+                            await navigator.clipboard.writeText(window.location.href);
+                        } else {
+                            const textArea = document.createElement('textarea');
+                            textArea.value = window.location.href;
+                            document.body.appendChild(textArea);
+                            textArea.select();
+                            document.execCommand('copy');
+                            document.body.removeChild(textArea);
+                        }
+
+                        if (copyToastEl) {
+                            const toast = new bootstrap.Toast(copyToastEl);
+                            toast.show();
+                        }
+                    } catch (err) {
+                        console.error('Failed to copy URL:', err);
+                    }
+                });
+            }
+
+            // 3. COMMENT FEATURE
+            if (commentForm) {
+                commentForm.addEventListener('submit', async function(e) {
+                    e.preventDefault();
+                    const text = commentInput.value.trim();
+                    if (!text) {
+                        commentInput.classList.add('is-invalid');
+                        return;
+                    }
+                    commentInput.classList.remove('is-invalid');
+
+                    if (submitCommentBtn) submitCommentBtn.disabled = true;
+                    if (commentBtnText) commentBtnText.textContent = 'Posting...';
+                    if (commentBtnSpinner) commentBtnSpinner.classList.remove('d-none');
+
+                    try {
+                        const response = await fetch(`/news/${newsId}/comment`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'X-CSRFToken': csrfToken
+                            },
+                            body: JSON.stringify({ comment_text: text })
+                        });
+
+                        if (response.status === 401) {
+                            const data = await response.json();
+                            if (data.redirect) {
+                                window.location.href = data.redirect;
+                            } else {
+                                window.location.href = "{{ url_for('auth.user_login') }}";
+                            }
+                            return;
+                        }
+
+                        if (response.ok) {
+                            const data = await response.json();
+                            if (data.success && data.comment) {
+                                // Create comment card
+                                const newCommentDiv = document.createElement('div');
+                                newCommentDiv.className = 'comment-item p-3 rounded-3 border bg-white shadow-none';
+                                newCommentDiv.style.borderColor = '#e2e8f0';
+
+                                const initial = (data.comment.user_name || 'U').charAt(0).toUpperCase();
+
+                                newCommentDiv.innerHTML = `
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="comment-avatar rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 32px; height: 32px; font-size: 0.85rem;">
+                                                ${initial}
+                                            </div>
+                                            <strong class="text-dark" style="font-size: 0.95rem;">
+                                                ${escapeHtml(data.comment.user_name || 'User')}
+                                            </strong>
+                                        </div>
+                                        <small class="text-muted" style="font-size: 0.8rem;">
+                                            ${escapeHtml(data.comment.created_at)}
+                                        </small>
+                                    </div>
+                                    <p class="mb-0 text-secondary" style="font-size: 0.95rem; line-height: 1.6; white-space: pre-line; word-break: break-word;">
+                                        ${escapeHtml(data.comment.comment_text)}
+                                    </p>
+                                `;
+
+                                if (noCommentsMsg) {
+                                    noCommentsMsg.remove();
+                                }
+
+                                commentsList.prepend(newCommentDiv);
+                                commentInput.value = '';
+                                if (commentsCount) {
+                                    commentsCount.textContent = data.comments_count;
+                                }
+                            }
+                        }
+                    } catch (err) {
+                        console.error('Error posting comment:', err);
+                    } finally {
+                        if (submitCommentBtn) submitCommentBtn.disabled = false;
+                        if (commentBtnText) commentBtnText.textContent = 'Post Comment';
+                        if (commentBtnSpinner) commentBtnSpinner.classList.add('d-none');
+                    }
+                });
+            }
+
+            function escapeHtml(str) {
+                const div = document.createElement('div');
+                div.textContent = str;
+                return div.innerHTML;
+            }
+        });
+    </script>
 </body>
-
 </html>
