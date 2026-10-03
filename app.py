@@ -246,6 +246,13 @@ def create_app(config_class=Config):
             error_icon="bi-tools"
         ), 500
 
+    @app.route("/health", methods=["GET"])
+    def health_check():
+
+        return {
+            "status": "ok",
+            "service": "AI-News-Gen-copilot"
+        }, 200
 
     return app
 
