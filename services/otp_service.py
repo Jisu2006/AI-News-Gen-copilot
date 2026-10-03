@@ -1,140 +1,385 @@
 import secrets
-from datetime import datetime, timedelta
-from werkzeug.security import generate_password_hash, check_password_hash
-from database.db import db
-from models.database_models import User, OTPVerification
+from datetime import timedelta
+
+from werkzeug.security import (
+    generate_password_hash,
+    check_password_hash,
+)
+
+from database.mongo import (
+    get_otp_collection,
+    get_users_collection,
+    get_next_id,
+    utc_now,
+)
+
 from services.email_service import send_otp_email
+
 
 OTP_EXPIRY_MINUTES = 10
 OTP_RESEND_COOLDOWN_SECONDS = 60
 MAX_OTP_ATTEMPTS = 5
 
 
-def generate_and_send_otp(email: str, otp_type: str = "registration", user_name: str = "User") -> tuple[bool, str]:
-    """
-    Generate a secure 6-digit OTP, hash and store it in database, and send via email.
-    """
+# ============================================================
+# GENERATE + SEND OTP
+# ============================================================
+
+def generate_and_send_otp(
+    email: str,
+    otp_type: str = "registration",
+    user_name: str = "User",
+) -> tuple[bool, str]:
+
     email = email.strip().lower()
 
+    otp_collection = get_otp_collection()
+
+    # --------------------------------------------------------
     # Check resend cooldown
-    can_resend, cooldown_msg, _ = can_resend_otp(email, otp_type)
+    # --------------------------------------------------------
+
+    can_resend, cooldown_msg, _ = can_resend_otp(
+        email,
+        otp_type
+    )
+
     if not can_resend:
         return False, cooldown_msg
 
-    # Invalidate previous unused OTPs for this email and type
-    OTPVerification.query.filter_by(
-        email=email,
-        otp_type=otp_type,
-        used=False
-    ).update({"used": True})
+    # --------------------------------------------------------
+    # Invalidate previous OTPs
+    # --------------------------------------------------------
 
-    # Generate 6-digit secure numeric OTP
-    otp_code = f"{secrets.randbelow(900000) + 100000}"
-    otp_hash = generate_password_hash(otp_code)
-
-    now = datetime.utcnow()
-    expires_at = now + timedelta(minutes=OTP_EXPIRY_MINUTES)
-    resend_available_at = now + timedelta(seconds=OTP_RESEND_COOLDOWN_SECONDS)
-
-    otp_record = OTPVerification(
-        email=email,
-        otp_hash=otp_hash,
-        otp_type=otp_type,
-        expires_at=expires_at,
-        attempts=0,
-        resend_available_at=resend_available_at,
-        used=False
+    otp_collection.update_many(
+        {
+            "email": email,
+            "otp_type": otp_type,
+            "used": False,
+        },
+        {
+            "$set": {
+                "used": True
+            }
+        },
     )
 
-    db.session.add(otp_record)
-    db.session.commit()
+    # --------------------------------------------------------
+    # Generate OTP
+    # --------------------------------------------------------
 
-    # Send email
-    email_sent = send_otp_email(email, otp_code, user_name)
+    otp_code = str(
+        secrets.randbelow(900000) + 100000
+    )
+
+    otp_hash = generate_password_hash(
+        otp_code
+    )
+
+    now = utc_now()
+
+    expires_at = (
+        now +
+        timedelta(minutes=OTP_EXPIRY_MINUTES)
+    )
+
+    resend_available_at = (
+        now +
+        timedelta(
+            seconds=OTP_RESEND_COOLDOWN_SECONDS
+        )
+    )
+
+    # --------------------------------------------------------
+    # Store OTP in MongoDB
+    # --------------------------------------------------------
+
+    otp_document = {
+        "_id": get_next_id("otp_verifications"),
+
+        "email": email,
+
+        "otp_hash": otp_hash,
+
+        "otp_type": otp_type,
+
+        "expires_at": expires_at,
+
+        "attempts": 0,
+
+        "resend_available_at": resend_available_at,
+
+        "used": False,
+
+        "metadata": {},
+
+        "created_at": now,
+    }
+
+    otp_collection.insert_one(
+        otp_document
+    )
+
+    # --------------------------------------------------------
+    # Send OTP email
+    # --------------------------------------------------------
+
+    email_sent = send_otp_email(
+        email,
+        otp_code,
+        user_name
+    )
 
     if email_sent:
-        return True, f"A 6-digit verification code has been sent to {email}."
-    else:
-        # If email fails (e.g. offline/no SMTP credentials in dev), return message
-        return True, f"Verification code generated for {email}. (Note: Check email/spam folder)"
+        return (
+            True,
+            f"A 6-digit verification code has been sent to {email}."
+        )
+
+    # Email failed
+    return (
+        False,
+        "OTP was generated, but the email could not be sent. "
+        "Please check your email configuration and try again."
+    )
 
 
-def verify_otp(email: str, entered_otp: str, otp_type: str = "registration") -> tuple[bool, str]:
-    """
-    Verify the entered OTP against the stored hash in database.
-    """
+# ============================================================
+# VERIFY OTP
+# ============================================================
+
+def verify_otp(
+    email: str,
+    entered_otp: str,
+    otp_type: str = "registration",
+) -> tuple[bool, str]:
+
     email = email.strip().lower()
     entered_otp = (entered_otp or "").strip()
 
-    if not entered_otp or len(entered_otp) != 6 or not entered_otp.isdigit():
-        return False, "Please enter a valid 6-digit OTP code."
+    if (
+        not entered_otp
+        or len(entered_otp) != 6
+        or not entered_otp.isdigit()
+    ):
+        return (
+            False,
+            "Please enter a valid 6-digit OTP code."
+        )
 
-    # Fetch the latest unused OTP record
-    record = OTPVerification.query.filter_by(
-        email=email,
-        otp_type=otp_type,
-        used=False
-    ).order_by(OTPVerification.created_at.desc()).first()
+    otp_collection = get_otp_collection()
+
+    # --------------------------------------------------------
+    # Find latest unused OTP
+    # --------------------------------------------------------
+
+    record = otp_collection.find_one(
+        {
+            "email": email,
+            "otp_type": otp_type,
+            "used": False,
+        },
+        sort=[
+            ("created_at", -1)
+        ],
+    )
 
     if not record:
-        return False, "No active verification code found. Please request a new code."
+        return (
+            False,
+            "No active verification code found. "
+            "Please request a new code."
+        )
 
-    now = datetime.utcnow()
+    now = utc_now()
 
+    # --------------------------------------------------------
     # Check expiration
-    if now > record.expires_at:
-        record.used = True
-        db.session.commit()
-        return False, "Verification code has expired. Please request a new code."
+    # --------------------------------------------------------
 
-    # Check attempt limit
-    if record.attempts >= MAX_OTP_ATTEMPTS:
-        record.used = True
-        db.session.commit()
-        return False, "Maximum verification attempts exceeded. Please request a new code."
+    if now > record["expires_at"]:
 
+        otp_collection.update_one(
+            {
+                "_id": record["_id"]
+            },
+            {
+                "$set": {
+                    "used": True
+                }
+            },
+        )
+
+        return (
+            False,
+            "Verification code has expired. "
+            "Please request a new code."
+        )
+
+    # --------------------------------------------------------
+    # Check attempts
+    # --------------------------------------------------------
+
+    if record["attempts"] >= MAX_OTP_ATTEMPTS:
+
+        otp_collection.update_one(
+            {
+                "_id": record["_id"]
+            },
+            {
+                "$set": {
+                    "used": True
+                }
+            },
+        )
+
+        return (
+            False,
+            "Maximum verification attempts exceeded. "
+            "Please request a new code."
+        )
+
+    # --------------------------------------------------------
     # Check OTP hash
-    if check_password_hash(record.otp_hash, entered_otp):
-        record.used = True
+    # --------------------------------------------------------
 
-        # Update user verification status in database
-        user = User.query.filter_by(email=email).first()
-        if user:
-            user.is_verified = True
-            user.email_verified = True
-            user.email_verified_at = datetime.utcnow()
+    if check_password_hash(
+        record["otp_hash"],
+        entered_otp
+    ):
 
-        db.session.commit()
-        return True, "Email verified successfully!"
-    else:
-        record.attempts += 1
-        db.session.commit()
-        remaining = MAX_OTP_ATTEMPTS - record.attempts
-        if remaining > 0:
-            return False, f"Incorrect verification code. {remaining} attempt(s) remaining."
-        else:
-            record.used = True
-            db.session.commit()
-            return False, "Maximum verification attempts exceeded. Please request a new code."
+        # Mark OTP used
+        otp_collection.update_one(
+            {
+                "_id": record["_id"]
+            },
+            {
+                "$set": {
+                    "used": True
+                }
+            },
+        )
+
+        # ----------------------------------------------------
+        # Verify user in MongoDB
+        # ----------------------------------------------------
+
+        users = get_users_collection()
+
+        result = users.update_one(
+            {
+                "email": email
+            },
+            {
+                "$set": {
+                    "is_verified": True,
+                    "email_verified": True,
+                    "email_verified_at": now,
+                    "updated_at": now,
+                }
+            },
+        )
+
+        if result.matched_count == 0:
+            return (
+                False,
+                "User account was not found."
+            )
+
+        return (
+            True,
+            "Email verified successfully!"
+        )
+
+    # --------------------------------------------------------
+    # Incorrect OTP
+    # --------------------------------------------------------
+
+    new_attempts = record["attempts"] + 1
+
+    update_data = {
+        "$set": {
+            "attempts": new_attempts
+        }
+    }
+
+    if new_attempts >= MAX_OTP_ATTEMPTS:
+        update_data["$set"]["used"] = True
+
+    otp_collection.update_one(
+        {
+            "_id": record["_id"]
+        },
+        update_data,
+    )
+
+    remaining = (
+        MAX_OTP_ATTEMPTS -
+        new_attempts
+    )
+
+    if remaining > 0:
+        return (
+            False,
+            f"Incorrect verification code. "
+            f"{remaining} attempt(s) remaining."
+        )
+
+    return (
+        False,
+        "Maximum verification attempts exceeded. "
+        "Please request a new code."
+    )
 
 
-def can_resend_otp(email: str, otp_type: str = "registration") -> tuple[bool, str, int]:
-    """
-    Check if the user can request a resend of the OTP based on cooldown.
-    """
+# ============================================================
+# CHECK RESEND COOLDOWN
+# ============================================================
+
+def can_resend_otp(
+    email: str,
+    otp_type: str = "registration",
+) -> tuple[bool, str, int]:
+
     email = email.strip().lower()
-    record = OTPVerification.query.filter_by(
-        email=email,
-        otp_type=otp_type,
-        used=False
-    ).order_by(OTPVerification.created_at.desc()).first()
+
+    record = get_otp_collection().find_one(
+        {
+            "email": email,
+            "otp_type": otp_type,
+            "used": False,
+        },
+        sort=[
+            ("created_at", -1)
+        ],
+    )
 
     if not record:
         return True, "", 0
 
-    now = datetime.utcnow()
-    if now < record.resend_available_at:
-        remaining_seconds = int((record.resend_available_at - now).total_seconds())
-        return False, f"Please wait {remaining_seconds} seconds before requesting a new code.", remaining_seconds
+    now = utc_now()
+
+    resend_available_at = record.get(
+        "resend_available_at"
+    )
+
+    if (
+        resend_available_at
+        and now < resend_available_at
+    ):
+
+        remaining_seconds = int(
+            (
+                resend_available_at -
+                now
+            ).total_seconds()
+        )
+
+        return (
+            False,
+            f"Please wait {remaining_seconds} "
+            f"seconds before requesting a new code.",
+            remaining_seconds,
+        )
 
     return True, "", 0
