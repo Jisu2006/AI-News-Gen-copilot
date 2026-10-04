@@ -171,7 +171,7 @@
                             {% if news.image_path %}
 
                                 <img
-                                    src="{{ url_for('static', filename=news.image_path) }}"
+                                    src="{{ news.image_path|media_url }}"
                                     alt="Breaking News Image"
                                     class="news-image"
                                 >

@@ -4,6 +4,7 @@ import logging
 from flask import (
     Flask,
     render_template,
+    url_for,
 )
 
 from flask_wtf.csrf import (
@@ -115,6 +116,35 @@ def create_app(config_class=Config):
                 )
                 else []
             )
+
+            # ========================================================
+            # MEDIA URL TEMPLATE FILTER
+            # ========================================================
+
+    @app.template_filter("media_url")
+    def media_url(value):
+
+        if not value:
+
+            return ""
+
+        value = str(
+            value
+        ).strip()
+
+        if value.startswith(
+            (
+                "http://",
+                "https://"
+            )
+        ):
+
+            return value
+
+        return url_for(
+            "static",
+            filename=value
+        )
 
     # ========================================================
     # ERROR HANDLERS

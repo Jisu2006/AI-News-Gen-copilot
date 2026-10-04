@@ -3,6 +3,7 @@ import uuid
 from datetime import datetime
 from pathlib import Path
 
+
 from flask import (
     Blueprint,
     render_template,
@@ -13,9 +14,15 @@ from flask import (
     flash,
 )
 
+from config import Config
+
+from services.cloudinary_service import (
+    cloudinary_configured,
+    upload_media,
+)
+
 from werkzeug.utils import secure_filename
 
-from config import Config
 from repositories.news_repository import (
     create_news,
     find_news_by_id,
@@ -498,13 +505,22 @@ def submit_news():
                 )
 
         # ----------------------------------------------------
-        # UPLOAD FOLDER
+        # ----------------------------------------------------
+        # MEDIA STORAGE
+        # ----------------------------------------------------
+        # MEDIA STORAGE
         # ----------------------------------------------------
 
-        UPLOAD_FOLDER.mkdir(
-            parents=True,
-            exist_ok=True
+        cloud_uploads_enabled = (
+            cloudinary_configured()
         )
+
+        if not cloud_uploads_enabled:
+
+            UPLOAD_FOLDER.mkdir(
+                parents=True,
+                exist_ok=True
+            )
 
         image_path = None
         video_path = None
@@ -551,30 +567,59 @@ def submit_news():
                     )
                 )
 
-            filename = generate_unique_filename(
-                image.filename
-            )
+            if cloud_uploads_enabled:
 
-            if not filename:
+                try:
 
-                flash(
-                    "Invalid image filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.submit_news"
+                    image_path = upload_media(
+                        image,
+                        resource_type="image",
+                        folder="ai-newsgen/news/images"
                     )
+
+                except Exception as error:
+
+                    print(
+                        f"[CLOUDINARY IMAGE UPLOAD ERROR] {error}"
+                    )
+
+                    flash(
+                        "Image upload failed. Please try again.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "user.submit_news"
+                        )
+                    )
+
+            else:
+
+                filename = generate_unique_filename(
+                    image.filename
                 )
 
-            image_path = (
-                f"uploads/{filename}"
-            )
+                if not filename:
 
-            image.save(
-                UPLOAD_FOLDER / filename
-            )
+                    flash(
+                        "Invalid image filename.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "user.submit_news"
+                        )
+                    )
+
+                image_path = (
+                    f"uploads/{filename}"
+                )
+
+                image.save(
+                    UPLOAD_FOLDER / filename
+                )
 
         # ----------------------------------------------------
         # VIDEO
@@ -618,32 +663,60 @@ def submit_news():
                     )
                 )
 
-            filename = generate_unique_filename(
-                video.filename
-            )
+            if cloud_uploads_enabled:
 
-            if not filename:
+                try:
 
-                flash(
-                    "Invalid video filename.",
-                    "error"
-                )
-
-                return redirect(
-                    url_for(
-                        "user.submit_news"
+                    video_path = upload_media(
+                        video,
+                        resource_type="video",
+                        folder="ai-newsgen/news/videos"
                     )
+
+                except Exception as error:
+
+                    print(
+                        f"[CLOUDINARY VIDEO UPLOAD ERROR] {error}"
+                    )
+
+                    flash(
+                        "Video upload failed. Please try again.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "user.submit_news"
+                        )
+                    )
+
+            else:
+
+                filename = generate_unique_filename(
+                    video.filename
                 )
 
-            video_path = (
-                f"uploads/{filename}"
-            )
+                if not filename:
 
-            video.save(
-                UPLOAD_FOLDER / filename
-            )
+                    flash(
+                        "Invalid video filename.",
+                        "error"
+                    )
 
-        # ----------------------------------------------------
+                    return redirect(
+                        url_for(
+                            "user.submit_news"
+                        )
+                    )
+
+                video_path = (
+                    f"uploads/{filename}"
+                )
+
+                video.save(
+                    UPLOAD_FOLDER / filename
+                )
+
         # INITIAL STATUS
         # ----------------------------------------------------
 
@@ -975,10 +1048,16 @@ def provide_information(
                 )
             )
 
-        UPLOAD_FOLDER.mkdir(
-            parents=True,
-            exist_ok=True
+        cloud_uploads_enabled = (
+            cloudinary_configured()
         )
+
+        if not cloud_uploads_enabled:
+
+            UPLOAD_FOLDER.mkdir(
+                parents=True,
+                exist_ok=True
+            )
 
         update_data = {}
 
@@ -1026,21 +1105,53 @@ def provide_information(
                     )
                 )
 
-            filename = generate_unique_filename(
-                image.filename
-            )
+            if cloud_uploads_enabled:
 
-            if filename:
+                try:
 
-                image.save(
-                    UPLOAD_FOLDER / filename
+                    update_data[
+                        "image_path"
+                    ] = upload_media(
+                        image,
+                        resource_type="image",
+                        folder="ai-newsgen/news/images"
+                    )
+
+                except Exception as error:
+
+                    print(
+                        f"[CLOUDINARY IMAGE UPDATE ERROR] {error}"
+                    )
+
+                    flash(
+                        "Image upload failed. Please try again.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "user.provide_information",
+                            news_id=news_record.id
+                        )
+                    )
+
+            else:
+
+                filename = generate_unique_filename(
+                    image.filename
                 )
 
-                update_data[
-                    "image_path"
-                ] = (
-                    f"uploads/{filename}"
-                )
+                if filename:
+
+                    image.save(
+                        UPLOAD_FOLDER / filename
+                    )
+
+                    update_data[
+                        "image_path"
+                    ] = (
+                        f"uploads/{filename}"
+                    )
 
         elif (
             requested_fields["image"]
@@ -1104,21 +1215,53 @@ def provide_information(
                     )
                 )
 
-            filename = generate_unique_filename(
-                video.filename
-            )
+            if cloud_uploads_enabled:
 
-            if filename:
+                try:
 
-                video.save(
-                    UPLOAD_FOLDER / filename
+                    update_data[
+                        "video_path"
+                    ] = upload_media(
+                        video,
+                        resource_type="video",
+                        folder="ai-newsgen/news/videos"
+                    )
+
+                except Exception as error:
+
+                    print(
+                        f"[CLOUDINARY VIDEO UPDATE ERROR] {error}"
+                    )
+
+                    flash(
+                        "Video upload failed. Please try again.",
+                        "error"
+                    )
+
+                    return redirect(
+                        url_for(
+                            "user.provide_information",
+                            news_id=news_record.id
+                        )
+                    )
+
+            else:
+
+                filename = generate_unique_filename(
+                    video.filename
                 )
 
-                update_data[
-                    "video_path"
-                ] = (
-                    f"uploads/{filename}"
-                )
+                if filename:
+
+                    video.save(
+                        UPLOAD_FOLDER / filename
+                    )
+
+                    update_data[
+                        "video_path"
+                    ] = (
+                        f"uploads/{filename}"
+                    )
 
         elif (
             requested_fields["video"]
@@ -1138,7 +1281,6 @@ def provide_information(
                 )
             )
 
-        # ----------------------------------------------------
         # SOURCE URL
         # ----------------------------------------------------
 

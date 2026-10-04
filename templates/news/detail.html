@@ -242,7 +242,7 @@
                     {% if news.image_path %}
                         <div class="mb-4">
                             <img
-                                src="{{ url_for('static', filename=news.image_path) }}"
+                                src="{{ news.image_path|media_url }}"
                                 alt="{{ news.final_headline or news.ai_headline or news.title }}"
                                 class="article-featured-image img-fluid"
                             >
@@ -252,7 +252,7 @@
                     {% if news.video_path %}
                         <div class="mb-4">
                             <video controls class="article-video-player">
-                                <source src="{{ url_for('static', filename=news.video_path) }}">
+                                <source src="{{ news.video_path|media_url }}">
                                 Your browser does not support the video tag.
                             </video>
                         </div>
@@ -500,7 +500,7 @@
                                     <div class="card h-100 related-card overflow-hidden shadow-none">
                                         {% if item.image_path %}
                                             <img
-                                                src="{{ url_for('static', filename=item.image_path) }}"
+                                                src="{{ item.image_path|media_url }}"
                                                 class="card-img-top related-thumb"
                                                 alt="{{ item.final_headline or item.ai_headline or item.title }}"
                                             >

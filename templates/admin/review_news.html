@@ -493,10 +493,7 @@
 
 
                             <img
-                                src="{{ url_for(
-                                    'static',
-                                    filename=news.image_path
-                                ) }}"
+                                src="{{ news.image_path|media_url }}"
                                 alt="Uploaded news image"
                                 class="news-detail-image"
                             >
@@ -505,10 +502,7 @@
                             <div class="mt-3">
 
                                 <a
-                                    href="{{ url_for(
-                                        'static',
-                                        filename=news.image_path
-                                    ) }}"
+                                    href="{{ news.image_path|media_url }}"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="btn secondary-btn btn-sm"
@@ -584,10 +578,7 @@
                             >
 
                                 <source
-                                    src="{{ url_for(
-                                        'static',
-                                        filename=news.video_path
-                                    ) }}"
+                                    src="{{ news.video_path|media_url }}"
                                 >
 
                                 Your browser does not support
@@ -599,10 +590,7 @@
                             <div class="mt-3">
 
                                 <a
-                                    href="{{ url_for(
-                                        'static',
-                                        filename=news.video_path
-                                    ) }}"
+                                    href="{{ news.video_path|media_url }}"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     class="btn secondary-btn btn-sm"
